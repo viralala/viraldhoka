@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { finePointer, getLenis, gsap, onReady, palette as p, reduced, ScrollTrigger, scrollVelocity } from '../lib/motion'
+import { fmtNum, getLocale, splitWords, useLang, useT } from '../i18n'
 import { wipe } from './PixelWipe'
 
 /** Long jumps through the page go through the pixel wipe instead of scrolling past everything. */
@@ -71,15 +72,18 @@ export function Rise({ text, as: Tag = 'span', className, delay = 0, onScroll = 
   const lines = text.split('\n')
   return (
     <Tag ref={ref as never} className={className} aria-label={text.replace('\n', ' ')}>
-      {lines.map((line, i) => (
-        <span className="line" key={i} aria-hidden="true">
-          {line.split(' ').map((w, j) => (
-            <span className="w" key={j}>
-              <span>{w}</span>{' '}
-            </span>
-          ))}
-        </span>
-      ))}
+      {lines.map((line, i) => {
+        const { parts, joiner } = splitWords(line)
+        return (
+          <span className="line" key={i} aria-hidden="true">
+            {parts.map((w, j) => (
+              <span className="w" key={j}>
+                <span>{w}</span>{joiner}
+              </span>
+            ))}
+          </span>
+        )
+      })}
     </Tag>
   )
 }
@@ -87,9 +91,15 @@ export function Rise({ text, as: Tag = 'span', className, delay = 0, onScroll = 
 /** A number that counts up when it scrolls into view. */
 export function Count({ to, suffix = '' }: { to: number; suffix?: string }) {
   const ref = useRef<HTMLSpanElement>(null)
+  const shown = useRef(reduced ? to : 0)
+  const lang = useLang()
+  // A new language reformats the number where it stands, without restarting the count
+  useEffect(() => {
+    ref.current!.textContent = fmtNum(shown.current) + suffix
+  }, [lang, suffix])
   useLayoutEffect(() => {
     const el = ref.current!
-    const fmt = (n: number) => Math.round(n).toLocaleString('en-IN') + suffix
+    const fmt = (n: number) => fmtNum(n) + suffix
     el.textContent = fmt(reduced ? to : 0)
     if (reduced) return
     const s = { v: 0 }
@@ -97,7 +107,16 @@ export function Count({ to, suffix = '' }: { to: number; suffix?: string }) {
       trigger: el,
       start: 'top 96%',
       once: true,
-      onEnter: () => gsap.to(s, { v: to, duration: 1.8, ease: 'power3.out', onUpdate: () => (el.textContent = fmt(s.v)) }),
+      onEnter: () =>
+        gsap.to(s, {
+          v: to,
+          duration: 1.8,
+          ease: 'power3.out',
+          onUpdate: () => {
+            shown.current = s.v
+            el.textContent = fmt(s.v)
+          },
+        }),
     })
     return () => st.kill()
   }, [to, suffix])
@@ -181,6 +200,7 @@ export function Scramble({ text, className, as: Tag = 'p' }: { text: string; cla
 /** Words fade up from faint to full as the paragraph scrolls past. */
 export function ScrubText({ text, className }: { text: string; className?: string }) {
   const ref = useRef<HTMLParagraphElement>(null)
+  const { parts, joiner } = splitWords(text)
   useLayoutEffect(() => {
     if (reduced) return
     const ctx = gsap.context(() => {
@@ -191,11 +211,11 @@ export function ScrubText({ text, className }: { text: string; className?: strin
       )
     })
     return () => ctx.revert()
-  }, [])
+  }, [text])
   return (
     <p ref={ref} className={className}>
-      {text.split(' ').map((w, i) => (
-        <span key={i}>{w} </span>
+      {parts.map((w, i) => (
+        <span key={i}>{w}{joiner}</span>
       ))}
     </p>
   )
@@ -273,13 +293,19 @@ export function PuneClock() {
     const t = window.setInterval(() => setNow(new Date()), 1000)
     return () => window.clearInterval(t)
   }, [])
-  const time = new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(now)
-  const h = Number(time.slice(0, 2))
+  const t = useT()
+  const time = new Intl.DateTimeFormat(getLocale(), { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(now)
+  const h = puneHour(now)
   const day = h >= 6 && h < 19
   return (
     <span className="clock pixel">
       <i className="clock-dot" style={{ background: day ? p.pk3 : p.bl2 }} />
-      Pune {time} IST
+      {t.clock(time)}
     </span>
   )
+}
+
+/** The hour in Pune, 0 to 23, whatever language the page is in. */
+export function puneHour(d: Date) {
+  return Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', hourCycle: 'h23' }).format(d))
 }

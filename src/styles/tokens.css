@@ -25,10 +25,16 @@
   --blue-3: #6b95e8;
 
   /* Type */
-  --font-display: 'Boska', 'Times New Roman', serif;
-  --font-text: 'General Sans', system-ui, sans-serif;
-  --font-pixel: 'Silkscreen', ui-monospace, monospace;
-  --font-deva: 'Tiro Devanagari Marathi', serif;
+  /* Every stack carries a Devanagari and a CJK fallback, so each language finds its own
+     letters. The Latin faces come first and simply have no glyphs for the others. */
+  --deva-serif: 'Tiro Devanagari Hindi';
+  --deva-sans: 'Nirmala UI', 'Kohinoor Devanagari', 'Noto Sans Devanagari';
+  --cjk-serif: 'Noto Serif SC', 'Songti SC', 'SimSun';
+  --cjk-sans: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC';
+  --font-display: 'Boska', var(--deva-serif), var(--cjk-serif), 'Times New Roman', serif;
+  --font-text: 'General Sans', var(--deva-sans), var(--cjk-sans), system-ui, sans-serif;
+  --font-pixel: 'Silkscreen', var(--deva-sans), var(--cjk-sans), ui-monospace, monospace;
+  --font-deva: var(--deva-serif), serif;
 
   --t-hero: clamp(3.6rem, min(10vw, 18.5vh), 10.5rem);
   --t-h1: clamp(3rem, 7.4vw, 7.5rem);
@@ -69,4 +75,11 @@
   --z-loader: 70;
   --z-wipe: 80;
   --z-cursor: 90;
+}
+
+/* Marathi has its own forms of some letters, so it gets the Marathi cut of Tiro */
+:root:lang(mr) { --deva-serif: 'Tiro Devanagari Marathi'; }
+:root:lang(ja) {
+  --cjk-serif: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho';
+  --cjk-sans: 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', 'Noto Sans JP';
 }

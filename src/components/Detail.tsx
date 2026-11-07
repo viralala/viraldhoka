@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { Project } from '../data/site'
 import { gsap, lockScroll, reduced } from '../lib/motion'
+import { localProject, useT } from '../i18n'
 import { Arrow } from './Bits'
 
 type Session = { project: Project; from: () => DOMRect; onClose?: () => void }
@@ -21,6 +22,7 @@ const inset = (r: DOMRect) =>
  * a mask or a slide, and the screenshot bleeds in like ink.
  */
 export function Detail() {
+  const t = useT()
   const [session, setSession] = useState<Session | null>(null)
   const sheet = useRef<HTMLDivElement>(null)
   const closeBtn = useRef<HTMLButtonElement>(null)
@@ -92,12 +94,12 @@ export function Detail() {
   const closeRef = useRef(() => {})
 
   if (!session) return null
-  const p = session.project
+  const p = localProject(session.project, t)
 
   return (
     <div ref={sheet} className="detail" role="dialog" aria-modal="true" aria-label={p.title} data-lenis-prevent>
       <button ref={closeBtn} className="detail-close pixel" onClick={() => closeRef.current()}>
-        Close / बंद
+        {t.detail.close}
       </button>
 
       <div className="detail-text">
@@ -114,14 +116,14 @@ export function Detail() {
         <div className="dt-line"><p className="detail-credit">{p.credit}</p></div>
         <div className="dt-line detail-links">
           <div>
-            <a className="btn btn-ink" href={p.url} target="_blank" rel="noreferrer">Visit {p.domain.endsWith('.vercel.app') ? 'the site' : p.domain} <Arrow /></a>
-            {p.repo && <a className="btn btn-line" href={p.repo} target="_blank" rel="noreferrer">Code</a>}
+            <a className="btn btn-ink" href={p.url} target="_blank" rel="noreferrer">{p.domain.endsWith('.vercel.app') ? t.detail.visitSite : t.detail.visit(p.domain)} <Arrow /></a>
+            {p.repo && <a className="btn btn-line" href={p.repo} target="_blank" rel="noreferrer">{t.detail.code}</a>}
           </div>
         </div>
       </div>
 
       <div className="detail-poster">
-        <svg viewBox="0 0 1280 800" role="img" aria-label={`Screenshot of ${p.title}`}>
+        <svg viewBox="0 0 1280 800" role="img" aria-label={t.detail.shot(p.title)}>
           <defs>
             <filter id="ink-edge" x="-20%" y="-20%" width="140%" height="140%">
               <feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="3" seed="7" />

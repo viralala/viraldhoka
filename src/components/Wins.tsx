@@ -3,14 +3,17 @@ import { COMMITS } from '../data/commits'
 import { ARCHIVE, HACKATHONS, PROJECTS, RESEARCH } from '../data/site'
 import { gsap, palette as p, reduced, ScrollTrigger } from '../lib/motion'
 import { Arrow, Count, Rise } from './Bits'
+import { getDict, getLocale, useLang, useT } from '../i18n'
 import { detailApi } from './Detail'
 import { paintMor } from './Mor'
 
 /** Mor stands on the step you actually finished on. */
 function Podium() {
+  const t = useT()
   const [id, setId] = useState(HACKATHONS[0].id)
   const mor = useRef<HTMLCanvasElement>(null)
   const win = HACKATHONS.find((h) => h.id === id)!
+  const text = t.hackathons[win.id]
   useEffect(() => {
     paintMor(mor.current!)
   }, [])
@@ -18,7 +21,7 @@ function Podium() {
   const bottom = win.rank === 2 ? 66 : 42
   return (
     <div className="podium-card">
-      <div className="podium-tabs" role="tablist" aria-label="Hackathon results">
+      <div className="podium-tabs" role="tablist" aria-label={t.wins.results}>
         {HACKATHONS.map((h) => (
           <button key={h.id} role="tab" aria-selected={h.id === id} className={`chip ${h.id === id ? 'is-on' : ''}`} onClick={() => setId(h.id)}>
             {h.name}
@@ -32,9 +35,9 @@ function Podium() {
         <div className={`step s3 ${win.rank === 3 ? 'is-on' : ''}`}><b className="pixel">3</b></div>
       </div>
       <div className="podium-text" key={win.id}>
-        <p className="pixel">{win.host}</p>
-        <h3 className="display podium-title">{win.place}</h3>
-        <p className="podium-note">{win.note}</p>
+        <p className="pixel">{text.host}</p>
+        <h3 className="display podium-title">{text.place}</h3>
+        <p className="podium-note">{text.note}</p>
       </div>
     </div>
   )
@@ -42,8 +45,12 @@ function Podium() {
 
 /** 250 teams, narrowed to 40, narrowed to the podium. Each cell is one team. */
 function Funnel() {
+  const t = useT()
+  const lang = useLang()
   const ref = useRef<HTMLCanvasElement>(null)
   const label = useRef<HTMLParagraphElement>(null)
+  const redraw = useRef(() => {})
+  useEffect(() => redraw.current(), [lang])
   useEffect(() => {
     const c = ref.current!
     const ctx = c.getContext('2d')!
@@ -69,9 +76,11 @@ function Funnel() {
       }
       if (label.current) {
         const n = Math.round(alive)
-        label.current.textContent = state.v >= 0.98 ? '3rd out of 250+ teams' : `${n} teams left`
+        const w = getDict().wins
+        label.current.textContent = state.v >= 0.98 ? w.funnelDone : w.funnelLeft(n)
       }
     }
+    redraw.current = draw
     if (reduced) {
       state.v = 1
       draw()
@@ -90,7 +99,7 @@ function Funnel() {
   }, [])
   return (
     <div className="funnel">
-      <canvas ref={ref} data-cursor-label="Replay" role="img" aria-label="250 teams narrowed to 40 finalists, then to the three podium teams" />
+      <canvas ref={ref} data-cursor-label={t.wins.replay} role="img" aria-label={t.wins.funnelAria} />
       <p ref={label} className="pixel funnel-label" />
     </div>
   )
@@ -103,6 +112,7 @@ const openProject = (id: string, el: HTMLElement) => {
 
 /** Every commit across all repositories, one pixel per day. */
 function Calendar() {
+  const t = useT()
   const ref = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const c = ref.current!
@@ -139,8 +149,8 @@ function Calendar() {
       const n = COMMITS.cells[i]
       if (n === undefined) return
       const d = new Date(start.getTime() + i * 86400000)
-      const day = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' })
-      c.dataset.cursorLabel = `${n} on ${day}`
+      const day = d.toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', timeZone: 'UTC' })
+      c.dataset.cursorLabel = getDict().wins.onDay(n, day)
     }
     c.addEventListener('pointermove', move)
     return () => {
@@ -148,39 +158,41 @@ function Calendar() {
       c.removeEventListener('pointermove', move)
     }
   }, [])
-  return <canvas ref={ref} className="calendar" data-cursor-label="Hover a day" role="img" aria-label={`${COMMITS.total} commits over the past year`} />
+  return <canvas ref={ref} className="calendar" data-cursor-label={t.wins.hoverDay} role="img" aria-label={t.wins.calendar(COMMITS.total)} />
 }
 
 export function Wins() {
+  const t = useT()
+  const w = t.wins
   return (
     <>
       <section className="wins wrap" id="wins" data-mor="research">
-        <Rise as="h2" className="display section-title" text="Wins so far" onScroll />
+        <Rise as="h2" className="display section-title" text={w.title} onScroll />
         <div className="wins-grid">
           <Podium />
           <Funnel />
           <div className="cesac-card" data-dark>
-            <p className="pixel">CESAC, live at cesac.in</p>
+            <p className="pixel">{w.cesac}</p>
             <dl className="stats">
-              <div><dt>Students registered</dt><dd className="display"><Count to={2400} suffix="+" /></dd></div>
-              <div><dt>Records submitted</dt><dd className="display"><Count to={11000} suffix="+" /></dd></div>
-              <div><dt>Page views</dt><dd className="display"><Count to={200000} suffix="+" /></dd></div>
+              <div><dt>{w.students}</dt><dd className="display"><Count to={2400} suffix="+" /></dd></div>
+              <div><dt>{w.records}</dt><dd className="display"><Count to={11000} suffix="+" /></dd></div>
+              <div><dt>{w.views}</dt><dd className="display"><Count to={200000} suffix="+" /></dd></div>
             </dl>
-            <button className="btn btn-paper" onClick={(e) => openProject('cesac', e.currentTarget)}>Open CESAC <Arrow /></button>
+            <button className="btn btn-paper" onClick={(e) => openProject('cesac', e.currentTarget)}>{w.openCesac} <Arrow /></button>
           </div>
         </div>
       </section>
 
       <section className="log wrap" id="research" data-mor="activity">
         <div className="log-side">
-          <Rise as="h2" className="display section-title" text={'Research\nand deep dives'} onScroll />
+          <Rise as="h2" className="display section-title" text={w.research} onScroll />
         </div>
         <ul className="log-list">
           {RESEARCH.map((r) => (
             <li key={r.id}>
-              <button className="log-row" data-cursor-label="Open" onClick={(e) => openProject(r.id, e.currentTarget)}>
-                <span className="display log-title">{r.title}</span>
-                <span className="log-where">{r.where}</span>
+              <button className="log-row" data-cursor-label={w.open} onClick={(e) => openProject(r.id, e.currentTarget)}>
+                <span className="display log-title">{t.research[r.id].title}</span>
+                <span className="log-where">{t.research[r.id].where}</span>
               </button>
             </li>
           ))}
@@ -189,24 +201,24 @@ export function Wins() {
 
       <section className="activity wrap">
         <div className="activity-head">
-          <h2 className="display section-title">Always shipping</h2>
+          <h2 className="display section-title">{w.shipping}</h2>
           <dl className="numbers">
-            <div><dd className="display"><Count to={COMMITS.total} /></dd><dt>commits</dt></div>
-            <div><dd className="display"><Count to={33} /></dd><dt>repositories</dt></div>
-            <div><dd className="display"><Count to={39} /></dd><dt>Vercel projects</dt></div>
+            <div><dd className="display"><Count to={COMMITS.total} /></dd><dt>{w.commits}</dt></div>
+            <div><dd className="display"><Count to={33} /></dd><dt>{w.repos}</dt></div>
+            <div><dd className="display"><Count to={39} /></dd><dt>{w.vercel}</dt></div>
           </dl>
         </div>
         <Calendar />
       </section>
 
       <section className="archive wrap">
-        <p className="pixel archive-kicker">Also on the shelf</p>
+        <p className="pixel archive-kicker">{w.also}</p>
         <ul className="archive-list">
           {ARCHIVE.map((a) => (
             <li key={a.title}>
               <a href={a.href} target="_blank" rel="noreferrer" className="archive-row">
-                <span className="display">{a.title}</span>
-                <span className="archive-note">{a.note}</span>
+                <span className="display">{t.archive[a.title].title ?? a.title}</span>
+                <span className="archive-note">{t.archive[a.title].note}</span>
                 <Arrow />
               </a>
             </li>

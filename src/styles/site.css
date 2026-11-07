@@ -140,6 +140,40 @@ html.has-cursor, html.has-cursor * { cursor: none !important; }
   white-space: nowrap;
 }
 .clock-dot { width: 8px; height: 8px; display: inline-block; }
+.nav-side { display: flex; align-items: center; gap: 8px; }
+
+/* Language menu */
+.lang { position: relative; }
+.lang-btn {
+  display: inline-flex; align-items: center; gap: 9px; height: 44px; padding: 0 16px 0 14px; border-radius: var(--r-pill);
+  font-size: var(--t-small); font-weight: 500; color: var(--ink); white-space: nowrap;
+  background: rgba(252, 251, 254, 0.72); backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), 0 8px 28px -14px rgba(27, 35, 80, 0.35);
+  transition: background var(--d-fast), transform var(--d-fast) var(--ease-press);
+}
+.lang-btn:active { transform: scale(0.96); }
+@media (hover: hover) { .lang-btn:hover { background: var(--pink-1); } }
+.lang.is-open .lang-btn { background: var(--ink); color: var(--paper); }
+.lang-short { display: none; }
+.lang-caret { width: 8px; height: 4px; background: currentColor; clip-path: polygon(0 0, 100% 0, 100% 50%, 75% 50%, 75% 100%, 25% 100%, 25% 50%, 0 50%); transition: transform var(--d-fast); }
+.lang.is-open .lang-caret { transform: scaleY(-1); }
+.lang-menu {
+  position: absolute; right: 0; top: calc(100% + 8px); min-width: 210px; padding: 6px; border-radius: 20px;
+  background: rgba(252, 251, 254, 0.94); backdrop-filter: blur(18px) saturate(1.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7), 0 18px 40px -18px rgba(27, 35, 80, 0.45);
+  transform-origin: 100% 0; animation: lang-in 220ms steps(4) both;
+}
+@keyframes lang-in { from { opacity: 0; transform: translateY(-6px) scale(0.97); } }
+.lang-head { padding: 8px 12px 6px; color: var(--ink-3); }
+.lang-opt {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; padding: 9px 12px;
+  border-radius: 14px; text-align: left; font-size: 0.95rem; font-weight: 500; color: var(--ink-2);
+  transition: background var(--d-fast), color var(--d-fast);
+}
+.lang-opt:hover, .lang-opt:focus-visible { background: var(--pink-1); color: var(--ink); outline: none; }
+.lang-opt.is-on { background: var(--ink); color: var(--paper); }
+.lang-opt i { width: 8px; height: 8px; }
+.lang-opt.is-on i { background: var(--pink-2); }
 
 /* Story: hero and night share one sticky stage */
 .story { height: 760vh; position: relative; background: var(--night); }
@@ -212,7 +246,7 @@ html.has-cursor, html.has-cursor * { cursor: none !important; }
 .work-hint { color: var(--ink-3); }
 .halftone {
   position: absolute; top: 14vh; z-index: 1; display: flex; flex-direction: column; align-items: center; pointer-events: none;
-  font-size: min(21vh, 13vw); line-height: 1.08;
+  font-family: var(--font-display); font-size: min(21vh, 13vw); line-height: 1.08;
   color: transparent;
   background-image: radial-gradient(circle at 50% 50%, rgba(236, 141, 181, 0.75) 0 36%, transparent 40%), linear-gradient(rgba(246, 191, 213, 0.34), rgba(169, 196, 245, 0.34));
   background-size: 4px 4px, auto;
@@ -303,7 +337,7 @@ html.has-cursor, html.has-cursor * { cursor: none !important; }
 .tl-tick { position: absolute; top: 12px; width: 1px; height: 7px; background: var(--ink); opacity: 0.3; }
 .tl-month { position: absolute; top: 12px; }
 .tl-month i { display: block; width: 1px; height: 13px; background: var(--ink); opacity: 0.6; }
-.tl-month b { position: absolute; top: 15px; left: 0; font-family: var(--font-pixel); font-size: 0.6rem; font-weight: 400; color: var(--ink-2); text-transform: uppercase; }
+.tl-month b { position: absolute; top: 15px; left: 0; white-space: nowrap; font-family: var(--font-pixel); font-size: 0.6rem; font-weight: 400; color: var(--ink-2); text-transform: uppercase; }
 .tl-dot { position: absolute; top: 12px; width: 10px; height: 10px; margin: -5px 0 0 -5px; background: var(--pink-3); box-shadow: 0 0 0 2px var(--paper); }
 
 /* Marquee */
@@ -506,7 +540,11 @@ html.has-cursor, html.has-cursor * { cursor: none !important; }
 }
 @media (max-width: 620px) {
   .nav-mark, .clock { display: none; }
-  .nav { justify-content: center; }
+  .nav { justify-content: center; gap: 8px; }
+  .nav-link { padding: 7px 10px; }
+  .lang-btn { height: 46px; padding: 0 12px; gap: 6px; }
+  .lang-name { display: none; }
+  .lang-short { display: inline; }
   .mor, .mor-sprite { width: 80px; height: 48px; }
   .mor-say { left: 44px; bottom: 50px; }
   .mor.is-right .mor-say { left: auto; right: 36px; }
@@ -526,3 +564,17 @@ html.has-cursor, html.has-cursor * { cursor: none !important; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   .mor { opacity: 1; visibility: visible; }
 }
+
+/* Scripts other than Latin. Devanagari sits taller, and Chinese and Japanese have no
+   true italic, so they stand upright and get room above and below each line. */
+:root:is(:lang(hi), :lang(mr)) .display { letter-spacing: 0; line-height: 1.2; }
+:root:is(:lang(zh), :lang(ja)) :is(.display, .loader-greet, .cv-title, .sp-title, .cap-title, .footer-big, .detail-credit) { font-style: normal; letter-spacing: 0.01em; }
+:root:is(:lang(zh), :lang(ja)) .display { line-height: 1.18; font-weight: 500; }
+:root:is(:lang(zh), :lang(ja)) .w { padding-inline: 0.02em; margin-inline: -0.02em; }
+:root:is(:lang(hi), :lang(mr), :lang(zh), :lang(ja)) .w { padding-block: 0.22em 0.3em; margin-block: -0.22em -0.3em; }
+:root:is(:lang(hi), :lang(mr), :lang(zh), :lang(ja)) .pixel { letter-spacing: 0; }
+:root:is(:lang(hi), :lang(mr)) .footer-greet { font-size: 0.82em; line-height: 1.3; }
+:root:is(:lang(zh), :lang(ja)) .footer-greet { font-size: 0.8em; line-height: 1.25; }
+:root:is(:lang(hi), :lang(mr), :lang(zh), :lang(ja)) .loader-greet { line-height: 1.3; }
+:root:is(:lang(zh), :lang(ja)) :is(.hero-title, .section-title) { font-size: calc(var(--t-h1) * 0.92); }
+:root:is(:lang(zh), :lang(ja)) .footer-big { font-size: 1.4rem; line-height: 1.3; }

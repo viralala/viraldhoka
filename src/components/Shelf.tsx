@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { PROJECTS, type Project } from '../data/site'
 import { gsap, reduced, scrollVelocity } from '../lib/motion'
+import { getDict, localProject, monthName, onLang, useLang, useT } from '../i18n'
 import { detailApi } from './Detail'
 
 const N = PROJECTS.length
@@ -11,31 +12,33 @@ const P = 1400
 const AUTO_MS = 3400
 /** After you touch the shelf, it waits this long before turning on its own again */
 const IDLE_MS = 6500
-const MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov']
+/** The timeline runs April to November 2026; month names come from the current language */
 const FIRST_MONTH = 4
+const MONTHS = Array.from({ length: 8 }, (_, i) => FIRST_MONTH + i)
 const yearPos = (m: number) => (m - FIRST_MONTH + 0.5) / MONTHS.length
 
 const mod = (a: number, b: number) => ((a % b) + b) % b
 const sstep = (t: number) => t * t * (3 - 2 * t)
 
 function Tape({ project, index, setRef }: { project: Project; index: number; setRef: (el: HTMLDivElement | null) => void }) {
+  const t = useT()
   const long = project.title.length > 10
   return (
     <div className={`tape scheme-${project.scheme}`} ref={setRef} data-v={index}>
       <div className="sp">
         <i className="sp-mark" />
         <span className="sp-title">{project.title}</span>
-        <span className="sp-by pixel">VD</span>
+        <span className="sp-by pixel">{t.work.initials}</span>
         <span className="sp-box pixel">{String(project.month).padStart(2, '0')}</span>
       </div>
       <div className="cv">
-        <p className="cv-top pixel">A Viral Dhoka build</p>
+        <p className="cv-top pixel">{t.work.build}</p>
         <p className={`cv-title ${long ? 'is-long' : ''}`}>{project.title}</p>
         <div className="cv-art">
           <img src={`/work/${project.id}-cover.png`} alt="" draggable={false} loading="lazy" />
         </div>
         <p className="cv-foot pixel">
-          <span>{project.kind}</span>
+          <span>{t.projects[project.id].kind}</span>
           <b>2026</b>
         </p>
       </div>
@@ -190,11 +193,15 @@ export function Shelf() {
 
     let activeIdx = -1
     const setCaption = (i: number, dir: number) => {
-      const p = PROJECTS[i]
+      const p = localProject(PROJECTS[i], getDict())
       swapLine(capTitle.current, p.title, dir)
       swapLine(capTag.current, p.tagline, dir)
-      swapLine(capMeta.current, `${MONTHS[p.month - FIRST_MONTH]} 2026 / ${p.kind}`, dir)
+      swapLine(capMeta.current, `${monthName(p.month, { month: 'short', year: 'numeric' })} / ${p.kind}`, dir)
     }
+    // A new language rewrites the caption in place
+    const offLang = onLang(() => {
+      if (activeIdx >= 0) setCaption(activeIdx, 1)
+    })
 
     let dotYear = yearPos(PROJECTS[0].month)
     let last = performance.now()
@@ -315,7 +322,8 @@ export function Shelf() {
       mouse.x = e.clientX
       mouse.y = e.clientY - wrap.getBoundingClientRect().top
       hover = tapeAt(e.clientX, e.clientY)
-      shelf.dataset.cursorLabel = hover < 0 ? 'Drag' : Math.abs(relOf(hover)) < 0.5 ? 'Open' : PROJECTS[hover % N].title
+      const w = getDict().work
+      shelf.dataset.cursorLabel = hover < 0 ? w.drag : Math.abs(relOf(hover)) < 0.5 ? w.open : PROJECTS[hover % N].title
       if (!dragging) return
       const dx = e.clientX - downX
       if (Math.abs(dx) > 5) moved = true
@@ -385,6 +393,7 @@ export function Shelf() {
     window.addEventListener('keydown', onKey)
 
     return () => {
+      offLang()
       gsap.ticker.remove(tick)
       ro.disconnect()
       io.disconnect()
@@ -409,6 +418,8 @@ export function Shelf() {
     return () => window.clearTimeout(t)
   }, [])
 
+  const t = useT()
+  useLang()
   const onTimeline = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
     const pos = (e.clientX - r.left) / r.width
@@ -429,16 +440,16 @@ export function Shelf() {
       <div ref={stageWrap} className="work-pin">
         <div ref={probe} className="work-probe" />
         <header className="work-head wrap">
-          <p className="pixel">Selected work</p>
-          <p className="pixel work-hint">Drag, swipe or use the arrows</p>
-          <p className="pixel">{N} tapes, on loop</p>
+          <p className="pixel">{t.work.kicker}</p>
+          <p className="pixel work-hint">{t.work.hint}</p>
+          <p className="pixel">{t.work.count(N)}</p>
         </header>
 
-        <div className="halftone halftone-l deva" aria-hidden="true"><span>का</span><span>म</span></div>
-        <div className="halftone halftone-r deva" aria-hidden="true"><span>सं</span><span>ग्र</span><span>ह</span></div>
+        <div className="halftone halftone-l" aria-hidden="true">{t.work.halftoneL.map((x, i) => <span key={i}>{x}</span>)}</div>
+        <div className="halftone halftone-r" aria-hidden="true">{t.work.halftoneR.map((x, i) => <span key={i}>{x}</span>)}</div>
         <div className="floor" aria-hidden="true" />
 
-        <div className="shelf" aria-hidden="true" data-cursor-label="Drag">
+        <div className="shelf" aria-hidden="true" data-cursor-label={t.work.drag}>
           <div ref={stage} className="stage">
             {copies.map((v) => (
               <Tape key={v} project={PROJECTS[v % N]} index={v} setRef={(el) => { tapes.current[v] = el }} />
@@ -446,7 +457,7 @@ export function Shelf() {
           </div>
         </div>
 
-        <button ref={ring} className="ring" aria-label="Open this project" onClick={() => api.current.open()}>
+        <button ref={ring} className="ring" aria-label={t.work.openProject} onClick={() => api.current.open()}>
           <i />
         </button>
 
@@ -457,10 +468,10 @@ export function Shelf() {
           <div className="cap-line cap-meta pixel"><span ref={capMeta} /></div>
         </div>
 
-        <button className="shelf-arrow is-left" aria-label="Previous project" onClick={() => api.current.step(-1)}>
+        <button className="shelf-arrow is-left" aria-label={t.work.prev} onClick={() => api.current.step(-1)}>
           <svg viewBox="0 0 25 12" width="25" height="12" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M6 1 1 6l5 5M1 6h23" /></svg>
         </button>
-        <button className="shelf-arrow is-right" aria-label="Next project" onClick={() => api.current.step(1)}>
+        <button className="shelf-arrow is-right" aria-label={t.work.next} onClick={() => api.current.step(1)}>
           <svg viewBox="0 0 25 12" width="25" height="12" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M19 1l5 5-5 5M24 6H1" /></svg>
         </button>
 
@@ -469,7 +480,7 @@ export function Shelf() {
           {MONTHS.map((m, i) => (
             <span key={m} className="tl-month" style={{ left: `${(i / MONTHS.length) * 100}%` }}>
               <i />
-              <b>{m}</b>
+              <b>{monthName(m)}</b>
             </span>
           ))}
           {Array.from({ length: MONTHS.length * 4 }, (_, i) => (i % 4 ? <i key={i} className="tl-tick" style={{ left: `${(i / (MONTHS.length * 4)) * 100}%` }} /> : null))}
@@ -479,7 +490,7 @@ export function Shelf() {
         <ol className="sr-only">
           {PROJECTS.map((p) => (
             <li key={p.id}>
-              <a href={p.url}>{p.title}: {p.tagline}</a>
+              <a href={p.url}>{p.title}: {t.projects[p.id].tagline}</a>
             </li>
           ))}
         </ol>

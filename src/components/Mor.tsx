@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { gsap, onReady, reduced, ScrollTrigger } from '../lib/motion'
+import { getDict, useT } from '../i18n'
 import { drawFanPixels, fanMor } from '../lib/shapes'
 
 // Mor's own colours. They are fixed on purpose and do not follow the site palette.
@@ -77,16 +78,6 @@ function paint(canvas: HTMLCanvasElement, legs: number, bob: number) {
   put(LEGS[legs], BODY.length)
 }
 
-const LINES: Record<string, string> = {
-  hero: 'Hi, I am Mor!',
-  statement: 'Keep scrolling',
-  night: 'Spin the globe!',
-  work: 'Pick a tape',
-  research: 'We did that!',
-  activity: 'Look at the commits',
-  footer: 'Say hello!',
-}
-
 /** Draws Mor at rest onto any 40 by 24 canvas. */
 export function paintMor(canvas: HTMLCanvasElement) {
   paint(canvas, 2, 0)
@@ -102,6 +93,7 @@ export function morSay(text: string) {
  * as you read, turns round when you scroll back, and fans his tail if you click.
  */
 export function Mor() {
+  const t = useT()
   const root = useRef<HTMLButtonElement>(null)
   const sprite = useRef<HTMLCanvasElement>(null)
   const fan = useRef<HTMLCanvasElement>(null)
@@ -170,7 +162,7 @@ export function Mor() {
             end: 'bottom 45%',
             onToggle: (self) => {
               if (!self.isActive) return
-              setSay(LINES[s.dataset.mor!] ?? '')
+              setSay(getDict().mor.lines[s.dataset.mor!] ?? '')
               window.clearTimeout(timer)
               timer = window.setTimeout(() => setSay(''), 2800)
             },
@@ -191,7 +183,7 @@ export function Mor() {
   const onClick = useCallback(() => {
     if (fanned) return
     setFanned(true)
-    setSay('मोर!')
+    setSay(getDict().mor.cry)
     const st = { n: 0 }
     gsap.to(st, {
       n: 24,
@@ -214,9 +206,9 @@ export function Mor() {
   }, [fanned])
 
   return (
-    <button ref={root} className="mor" onClick={onClick} aria-label="Mor the peacock. Click to fan his tail.">
+    <button ref={root} className="mor" onClick={onClick} aria-label={t.mor.aria}>
       {say && (
-        <span className={`mor-say pixel ${say === 'मोर!' ? 'is-deva' : ''}`} key={say}>
+        <span className="mor-say pixel" key={say}>
           {say}
         </span>
       )}

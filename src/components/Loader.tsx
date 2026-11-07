@@ -1,14 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap, lockScroll, markReady, reduced, ScrollTrigger } from '../lib/motion'
 import { drawFanPixels } from '../lib/shapes'
+import { fmtNum, getLocale, useT } from '../i18n'
 import { wipe } from './PixelWipe'
-
-const GREETINGS = [
-  { t: 'नमस्कार', deva: true },
-  { t: 'Hello', deva: false },
-  { t: 'नमस्ते', deva: true },
-  { t: 'Welcome', deva: false },
-]
 
 const FONT_FACES = [
   "italic 400 40px 'Boska'",
@@ -17,6 +11,7 @@ const FONT_FACES = [
   "500 16px 'General Sans'",
   "400 12px 'Silkscreen'",
   "400 40px 'Tiro Devanagari Marathi'",
+  "400 40px 'Tiro Devanagari Hindi'",
 ]
 
 /**
@@ -24,6 +19,7 @@ const FONT_FACES = [
  * so the 24 feathers always get a moment to open. Each feather is about 4%.
  */
 export function Loader() {
+  const t = useT()
   const fan = useRef<HTMLCanvasElement>(null)
   const num = useRef<HTMLSpanElement>(null)
   const root = useRef<HTMLDivElement>(null)
@@ -67,7 +63,7 @@ export function Loader() {
       }
     }
 
-    const greetTimer = window.setInterval(() => setGreet((g) => (g + 1) % GREETINGS.length), 620)
+    const greetTimer = window.setInterval(() => setGreet((g) => g + 1), 620)
     const start = performance.now()
     const MIN = 2000
 
@@ -82,7 +78,7 @@ export function Loader() {
       state.shown += (goal - state.shown) * (1 - Math.exp(-dt * 6))
       if (goal >= 1 && state.shown > 0.995) state.shown = 1
       drawFanPixels(fan.current!, state.shown * 24)
-      num.current!.textContent = String(Math.round(state.shown * 100)).padStart(3, '0')
+      num.current!.textContent = new Intl.NumberFormat(getLocale(), { minimumIntegerDigits: 3 }).format(Math.round(state.shown * 100))
       if (state.shown >= 1) {
         gsap.ticker.remove(tick)
         finish()
@@ -97,19 +93,19 @@ export function Loader() {
   }, [gone])
 
   if (gone) return null
-  const g = GREETINGS[greet]
+  const g = t.loader.greetings[greet % t.loader.greetings.length]
   return (
-    <div ref={root} className="loader" role="status" aria-label="Loading Viral Dhoka's portfolio">
-      <p className={`loader-greet ${g.deva ? 'is-deva' : ''}`} key={greet}>
-        {g.t}
+    <div ref={root} className="loader" role="status" aria-label={t.loader.aria}>
+      <p className="loader-greet" key={greet}>
+        {g}
       </p>
       <canvas ref={fan} className="loader-fan" width={176} height={100} aria-hidden="true" />
       <div className="loader-foot pixel">
         <span>Viral Dhoka</span>
         <span>
-          <span ref={num}>000</span>%
+          <span ref={num}>{fmtNum(0).padStart(3, fmtNum(0))}</span>%
         </span>
-        <span>Pune, IN</span>
+        <span>{t.loader.place}</span>
       </div>
     </div>
   )

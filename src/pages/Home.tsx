@@ -3,9 +3,11 @@ import { Footer } from '../components/Chrome'
 import { Shelf } from '../components/Shelf'
 import { Story } from '../components/Story'
 import { Wins } from '../components/Wins'
+import { useT } from '../i18n'
 import { palette as p } from '../lib/motion'
 
 export default function Home() {
+  const t = useT()
   return (
     <main>
       <Story />
@@ -14,13 +16,13 @@ export default function Home() {
       <section className="statement wrap" data-mor="statement">
         <ScrubText
           className="statement-text display"
-          text="I'm a second year computer engineering student who cares how things feel. Most days that means creative frontends. Other days it means the backend and the models that make them worth using."
+          text={t.statement}
         />
       </section>
 
       <Shelf />
 
-      <Marquee items={['Creative frontend', 'Full stack', 'Backend', 'AI and ML', 'पुणे']} />
+      <Marquee items={t.marquee} />
 
       <Wins />
 
