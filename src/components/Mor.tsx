@@ -141,6 +141,8 @@ export function Mor() {
         paint(c, 2, 0)
       }
       setX(x)
+      // Past the middle, the speech bubble opens to his left so it stays on screen
+      el.classList.toggle('is-right', x > window.innerWidth * 0.55)
       c.style.transform = `scaleX(${dir})`
     }
     if (!reduced) gsap.ticker.add(tick)

@@ -385,7 +385,9 @@ html.has-cursor, html.has-cursor * { cursor: none !important; }
 .footer-links a { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
 .footer-links small { color: var(--ink-2); font-weight: 400; }
 .hatch { position: relative; z-index: 1; margin: var(--s-6) auto 0; width: min(900px, 92vw); aspect-ratio: 16 / 8.6; }
-.footer-base { position: relative; z-index: 1; display: flex; justify-content: space-between; padding-block: 10px 86px; color: var(--ink); }
+.footer-base { position: relative; z-index: 1; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; padding-block: 10px 86px; color: var(--ink); }
+.footer-credit { color: var(--ink-2); }
+.footer-credit a { text-decoration: underline; text-underline-offset: 2px; }
 .footer-base .deva { text-transform: none; font-size: 1rem; }
 
 /* Detail sheet */
@@ -421,6 +423,8 @@ html.has-cursor, html.has-cursor * { cursor: none !important; }
 }
 .mor-say.is-deva { font-family: var(--font-deva); font-size: 1rem; text-transform: none; }
 .mor-say::after { content: ''; position: absolute; left: 10px; bottom: -6px; width: 6px; height: 6px; background: var(--ink); }
+.mor.is-right .mor-say { left: auto; right: 56px; }
+.mor.is-right .mor-say::after { left: auto; right: 10px; }
 @keyframes say { from { opacity: 0; transform: translateY(6px); } }
 
 /* Below desktop */
@@ -456,6 +460,7 @@ html.has-cursor, html.has-cursor * { cursor: none !important; }
   .nav { justify-content: center; }
   .mor, .mor-sprite { width: 80px; height: 48px; }
   .mor-say { left: 44px; bottom: 50px; }
+  .mor.is-right .mor-say { left: auto; right: 36px; }
   .stats { grid-template-columns: 1fr; }
   .podium-card { grid-template-columns: 1fr; padding: var(--s-3); }
   .podium { height: 170px; }

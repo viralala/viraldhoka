@@ -159,6 +159,9 @@ export function Footer() {
       <HatchFan />
       <div className="footer-base wrap pixel">
         <span>Viral Dhoka, 2026</span>
+        <span className="footer-credit">
+          India map from <a href="https://github.com/VictorCazanave/svg-maps" target="_blank" rel="noreferrer">svg-maps</a>, CC BY 4.0
+        </span>
         <span className="deva">पुणे, महाराष्ट्र</span>
       </div>
     </footer>
