@@ -1,0 +1,427 @@
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { PROJECTS, type Project } from '../data/site'
+import { getLenis, gsap, reduced, ScrollTrigger } from '../lib/motion'
+import { detailApi } from './Detail'
+
+const N = PROJECTS.length
+const COPIES = 3
+const TOTAL = N * COPIES
+const P = 1400
+const MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov']
+const FIRST_MONTH = 4
+const yearPos = (m: number) => (m - FIRST_MONTH + 0.5) / MONTHS.length
+
+const mod = (a: number, b: number) => ((a % b) + b) % b
+const sstep = (t: number) => t * t * (3 - 2 * t)
+
+function Tape({ project, index, setRef }: { project: Project; index: number; setRef: (el: HTMLDivElement | null) => void }) {
+  const long = project.title.length > 10
+  return (
+    <div className={`tape scheme-${project.scheme}`} ref={setRef} data-v={index}>
+      <div className="sp">
+        <i className="sp-mark" />
+        <span className="sp-title">{project.title}</span>
+        <span className="sp-by pixel">VD</span>
+        <span className="sp-box pixel">{String(project.month).padStart(2, '0')}</span>
+      </div>
+      <div className="cv">
+        <p className="cv-top pixel">A Viral Dhoka build</p>
+        <p className={`cv-title ${long ? 'is-long' : ''}`}>{project.title}</p>
+        <div className="cv-art">
+          <img src={`/work/${project.id}-cover.png`} alt="" draggable={false} loading="lazy" />
+        </div>
+        <p className="cv-foot pixel">
+          <span>{project.kind}</span>
+          <b>2026</b>
+        </p>
+      </div>
+    </div>
+  )
+}
+
+/** Swaps a line inside its mask: new text slides in as the old one slides out. */
+function swapLine(mask: HTMLElement | null, text: string, dir: number) {
+  if (!mask) return
+  const old = Array.from(mask.children) as HTMLElement[]
+  const next = document.createElement('span')
+  next.textContent = text
+  mask.appendChild(next)
+  if (reduced) {
+    old.forEach((o) => o.remove())
+    return
+  }
+  const opts = { duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'both' as const }
+  next.animate([{ transform: `translateY(${dir * 105}%)` }, { transform: 'translateY(0)' }], opts)
+  old.forEach((o) => {
+    const a = o.animate([{ transform: getComputedStyle(o).transform === 'none' ? 'translateY(0)' : getComputedStyle(o).transform }, { transform: `translateY(${-dir * 105}%)` }], opts)
+    a.onfinish = () => o.remove()
+  })
+}
+
+export function Shelf() {
+  const section = useRef<HTMLElement>(null)
+  const stageWrap = useRef<HTMLDivElement>(null)
+  const stage = useRef<HTMLDivElement>(null)
+  const probe = useRef<HTMLDivElement>(null)
+  const ring = useRef<HTMLButtonElement>(null)
+  const dot = useRef<HTMLElement>(null)
+  const tapes = useRef<(HTMLDivElement | null)[]>([])
+  const capTitle = useRef<HTMLSpanElement>(null)
+  const capTag = useRef<HTMLSpanElement>(null)
+  const capMeta = useRef<HTMLSpanElement>(null)
+  const api = useRef({ go: (_i: number) => {}, step: (_d: number) => {}, open: () => {} })
+
+  const copies = useMemo(() => Array.from({ length: TOTAL }, (_, v) => v), [])
+
+  useLayoutEffect(() => {
+    const wrap = stageWrap.current!
+    const shelf = wrap.querySelector('.shelf') as HTMLElement
+    const lenis = () => getLenis()
+
+    // Geometry, in the units of the current tape height
+    let H = 0
+    let W = 0
+    let ws = 0
+    let d = 0
+    let gap = 0
+    let U = 0
+    let XS: Float32Array = new Float32Array(1)
+
+    const scl = (u: number) => 1 / (1 + Math.pow(Math.abs(u) / U, 1.6))
+    const xsc = (u: number) => {
+      const i = Math.min(XS.length - 1, Math.abs(u) / 2)
+      const lo = Math.floor(i)
+      const hi = Math.min(XS.length - 1, lo + 1)
+      return Math.sign(u) * (XS[lo] + (XS[hi] - XS[lo]) * (i - lo))
+    }
+    const B = (r: number) => (Math.abs(r) < 1 ? (r + Math.sin(Math.PI * r) / Math.PI) / 2 : Math.sign(r) * 0.5)
+    const F = (r: number) => r * (ws + gap) + (d - ws + 1.4 * gap) * B(r)
+
+    const measure = () => {
+      H = probe.current!.offsetHeight
+      W = window.innerWidth
+      ws = (H * 142) / 840
+      d = (H * 474) / 900
+      gap = H * 0.035
+      U = H * (W < 768 ? 1.05 : 1.3)
+      const steps = Math.ceil((3 * U) / 2) + 2
+      XS = new Float32Array(steps)
+      let acc = 0
+      for (let i = 1; i < steps; i++) {
+        acc += 2 / (1 + Math.pow((i * 2) / U, 1.6))
+        XS[i] = acc
+      }
+      const s = stage.current!
+      s.style.setProperty('--Hpx', `${H}px`)
+      s.style.setProperty('--ws', `${ws}px`)
+      s.style.setProperty('--d', `${d}px`)
+    }
+    measure()
+
+    // The scroll position is the single source of truth for which tape is active
+    let T = N
+    let s = N
+    let settle = 0
+    let dragging = false
+    let inView = false
+    let detailOpen = false
+
+    const st = ScrollTrigger.create({
+      trigger: section.current,
+      start: 'top top',
+      end: 'bottom bottom',
+      onUpdate: (self) => {
+        T = N + self.progress * (N - 1)
+        window.clearTimeout(settle)
+        settle = window.setTimeout(() => (T = Math.round(T)), 160)
+      },
+      onToggle: (self) => (inView = self.isActive),
+    })
+
+    const yFor = (i: number) => st.start + (i / (N - 1)) * (st.end - st.start)
+    const go = (i: number) => {
+      const target = Math.max(0, Math.min(N - 1, i))
+      const l = lenis()
+      if (l) l.scrollTo(yFor(target), { duration: 0.9 })
+      else window.scrollTo(0, yFor(target))
+    }
+    const current = () => mod(Math.round(s), N)
+
+    const coverRect = () => {
+      const v = mod(Math.round(s), TOTAL)
+      return tapes.current[v]!.querySelector('.cv')!.getBoundingClientRect()
+    }
+    const open = () => {
+      T = Math.round(s)
+      detailOpen = true
+      detailApi.open(PROJECTS[current()], coverRect, () => (detailOpen = false))
+    }
+    api.current = { go, step: (dlt) => go(current() + dlt), open }
+
+    // Hover and pointer state
+    const mouse = { x: -1, y: -1 }
+    let hover = -1
+    const lifts = new Float32Array(TOTAL)
+    const depth = new Float32Array(TOTAL)
+    let tiltX = 0
+    let tiltY = 0
+
+    let activeIdx = -1
+    const setCaption = (i: number, dir: number) => {
+      const p = PROJECTS[i]
+      swapLine(capTitle.current, p.title, dir)
+      swapLine(capTag.current, p.tagline, dir)
+      swapLine(capMeta.current, `${MONTHS[p.month - FIRST_MONTH]} 2026 / ${p.kind}`, dir)
+    }
+
+    let dotYear = yearPos(PROJECTS[0].month)
+    let last = performance.now()
+    const tick = () => {
+      const now = performance.now()
+      const dt = Math.min(0.05, (now - last) / 1000)
+      last = now
+      if (!inView && activeIdx >= 0) return
+
+      const k = dragging ? 18 : 9
+      s = reduced ? T : s + (T - s) * (1 - Math.exp(-k * dt))
+
+      const ai = current()
+      if (ai !== activeIdx) {
+        const dir = activeIdx < 0 ? 1 : Math.sign(T - s) || 1
+        activeIdx = ai
+        setCaption(ai, dir)
+      }
+
+      const settled = Math.abs(T - s) < 0.3
+      const cy = wrap.clientHeight * 0.41
+      const onCover = settled && !detailOpen && Math.abs(mouse.x - W / 2) < d * 0.55 && Math.abs(mouse.y - cy) < H * 0.55
+      const wantY = onCover ? ((mouse.x - W / 2) / (d * 0.55)) * 8 : mouse.x < 0 ? 0 : ((mouse.x - W / 2) / W) * 4
+      const wantX = onCover ? -((mouse.y - cy) / (H / 2)) * 5 : 0
+      const te = 1 - Math.exp(-7 * dt)
+      tiltY += (wantY - tiltY) * te
+      tiltX += (wantX - tiltX) * te
+
+      for (let v = 0; v < TOTAL; v++) {
+        const el = tapes.current[v]
+        if (!el) continue
+        let r = mod(v - s, TOTAL)
+        if (r >= TOTAL / 2) r -= TOTAL
+        const u = F(r)
+        if (Math.abs(u) > U * 1.95) {
+          if (el.style.display !== 'none') el.style.display = 'none'
+          continue
+        }
+        if (el.style.display === 'none') el.style.display = ''
+        const o = sstep(Math.max(0, 1 - Math.abs(r)))
+        const want = v === hover && Math.abs(r) > 0.5 ? 1 : 0
+        lifts[v] += (want - lifts[v]) * (1 - Math.exp(-12 * dt))
+        const sc = scl(u)
+        const kk = 1 / sc
+        const z = P * (1 - kk) + o * H * 0.1
+        const x = xsc(u) * kk
+        const y = (H * 0.5 * (1 - sc) * 0.42 + o * H * 0.012 - lifts[v] * H * 0.05) * kk
+        const ry = Math.sign(u) * Math.min(1, Math.abs(u) / U) * 26 * (1 - o) - 90 * o + tiltY * o
+        const rx = tiltX * o
+        el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateX(${rx}deg) rotateY(${ry}deg)`
+        el.style.zIndex = String(Math.round(3000 + z))
+        depth[v] = z
+        el.style.setProperty('--sp', String(Math.min(0.6, o * 0.55 + (1 - sc) * 0.32)))
+        el.style.setProperty('--cv', String((1 - o) * 0.82))
+      }
+
+      const f = Math.floor(s)
+      const fr = s - f
+      const a = yearPos(PROJECTS[mod(f, N)].month)
+      const b = yearPos(PROJECTS[mod(f + 1, N)].month)
+      const want = a + (b - a) * fr
+      dotYear += (want - dotYear) * (1 - Math.exp(-14 * dt))
+      if (dot.current) dot.current.style.left = `${dotYear * 100}%`
+
+      if (ring.current) {
+        const show = detailOpen ? 0 : sstep(Math.max(0, 1 - Math.abs(T - s) * 3))
+        ring.current.style.transform = `translate(${W / 2 - d / 2 - 6}px, ${cy + H * 0.36}px) scale(${show})`
+      }
+    }
+    gsap.ticker.add(tick)
+    const ro = new ResizeObserver(measure)
+    ro.observe(document.documentElement)
+
+    // Pointer: tilt, hover, drag and click all live on the shelf
+    let downX = 0
+    let downScroll = 0
+    let moved = false
+    const perTape = () => (st.end - st.start) / (N - 1)
+    const relOf = (v: number) => {
+      const r = mod(v - s, TOTAL)
+      return r >= TOTAL / 2 ? r - TOTAL : r
+    }
+    // Browsers do not hit-test zero-size 3D stacks reliably, so tapes are found from
+    // their projected rectangles, nearest first
+    const tapeAt = (x: number, y: number) => {
+      let best = -1
+      let bestZ = -Infinity
+      for (let v = 0; v < TOTAL; v++) {
+        const el = tapes.current[v]
+        if (!el || el.style.display === 'none' || depth[v] <= bestZ) continue
+        const face = el.querySelector(Math.abs(relOf(v)) < 0.5 ? '.cv' : '.sp')!
+        const r = face.getBoundingClientRect()
+        if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+          best = v
+          bestZ = depth[v]
+        }
+      }
+      return best
+    }
+    const onMove = (e: PointerEvent) => {
+      mouse.x = e.clientX
+      mouse.y = e.clientY - wrap.getBoundingClientRect().top
+      hover = tapeAt(e.clientX, e.clientY)
+      shelf.dataset.cursorLabel = hover < 0 ? 'Drag' : Math.abs(relOf(hover)) < 0.5 ? 'Open' : PROJECTS[hover % N].title
+      if (!dragging) return
+      const dx = e.clientX - downX
+      if (Math.abs(dx) > 5) moved = true
+      if (!moved) return
+      const y = downScroll - (dx / (ws + gap)) * perTape()
+      const l = lenis()
+      if (l) l.scrollTo(y, { immediate: true })
+      else window.scrollTo(0, y)
+    }
+    const onDown = (e: PointerEvent) => {
+      dragging = true
+      moved = false
+      downX = e.clientX
+      downScroll = window.scrollY
+    }
+    const onUp = (e: PointerEvent) => {
+      const wasDrag = moved
+      const wasDown = dragging
+      dragging = false
+      moved = false
+      if (wasDrag) {
+        go(Math.round(T - N))
+        return
+      }
+      if (!wasDown) return
+      const v = tapeAt(e.clientX, e.clientY)
+      if (v < 0) return
+      if (Math.abs(relOf(v)) < 0.5) open()
+      else go(mod(v, N))
+    }
+    const onLeave = () => {
+      mouse.x = mouse.y = -1
+      hover = -1
+    }
+    wrap.addEventListener('pointermove', onMove, { passive: true })
+    wrap.addEventListener('pointerleave', onLeave)
+    shelf.addEventListener('pointerdown', onDown)
+    window.addEventListener('pointerup', onUp)
+
+    const onKey = (e: KeyboardEvent) => {
+      if (!inView || detailOpen) return
+      if (e.key === 'ArrowLeft') api.current.step(-1)
+      else if (e.key === 'ArrowRight') api.current.step(1)
+      else if (e.key === 'Enter' && (e.target as Element).tagName !== 'A' && (e.target as Element).tagName !== 'BUTTON') open()
+    }
+    window.addEventListener('keydown', onKey)
+
+    return () => {
+      gsap.ticker.remove(tick)
+      ro.disconnect()
+      st.kill()
+      window.clearTimeout(settle)
+      wrap.removeEventListener('pointermove', onMove)
+      wrap.removeEventListener('pointerleave', onLeave)
+      shelf.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [])
+
+  // The detail poster for the next tapes can be warmed up while people browse
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      PROJECTS.slice(0, 4).forEach((p) => {
+        const i = new Image()
+        i.src = `/work/${p.id}.webp`
+      })
+    }, 5000)
+    return () => window.clearTimeout(t)
+  }, [])
+
+  const onTimeline = (e: React.MouseEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    const pos = (e.clientX - r.left) / r.width
+    let best = 0
+    let dist = 9
+    PROJECTS.forEach((p, i) => {
+      const dd = Math.abs(yearPos(p.month) - pos)
+      if (dd < dist) {
+        dist = dd
+        best = i
+      }
+    })
+    api.current.go(best)
+  }
+
+  return (
+    <section ref={section} className="work" id="work" data-mor="work" style={{ height: `calc(100vh + ${N * 34}vh)` }}>
+      <div ref={stageWrap} className="work-pin">
+        <div ref={probe} className="work-probe" />
+        <header className="work-head wrap">
+          <p className="pixel">Selected work</p>
+          <p className="pixel">{N} tapes</p>
+        </header>
+
+        <div className="halftone halftone-l deva" aria-hidden="true"><span>का</span><span>म</span></div>
+        <div className="halftone halftone-r deva" aria-hidden="true"><span>सं</span><span>ग्र</span><span>ह</span></div>
+        <div className="floor" aria-hidden="true" />
+
+        <div className="shelf" aria-hidden="true" data-cursor-label="Drag">
+          <div ref={stage} className="stage">
+            {copies.map((v) => (
+              <Tape key={v} project={PROJECTS[v % N]} index={v} setRef={(el) => { tapes.current[v] = el }} />
+            ))}
+          </div>
+        </div>
+
+        <button ref={ring} className="ring" aria-label="Open this project" onClick={() => api.current.open()}>
+          <i />
+        </button>
+
+        <div className="caption" aria-live="polite">
+          <div className="cap-line cap-title"><span ref={capTitle} /></div>
+          <div className="cap-line cap-tag"><span ref={capTag} /></div>
+          <i className="cap-rule" />
+          <div className="cap-line cap-meta pixel"><span ref={capMeta} /></div>
+        </div>
+
+        <button className="shelf-arrow is-left" aria-label="Previous project" onClick={() => api.current.step(-1)}>
+          <svg viewBox="0 0 25 12" width="25" height="12" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M6 1 1 6l5 5M1 6h23" /></svg>
+        </button>
+        <button className="shelf-arrow is-right" aria-label="Next project" onClick={() => api.current.step(1)}>
+          <svg viewBox="0 0 25 12" width="25" height="12" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M19 1l5 5-5 5M24 6H1" /></svg>
+        </button>
+
+        <div className="timeline" aria-hidden="true" onClick={onTimeline} data-cursor>
+          <div className="tl-line" />
+          {MONTHS.map((m, i) => (
+            <span key={m} className="tl-month" style={{ left: `${(i / MONTHS.length) * 100}%` }}>
+              <i />
+              <b>{m}</b>
+            </span>
+          ))}
+          {Array.from({ length: MONTHS.length * 4 }, (_, i) => (i % 4 ? <i key={i} className="tl-tick" style={{ left: `${(i / (MONTHS.length * 4)) * 100}%` }} /> : null))}
+          <i ref={dot} className="tl-dot" />
+        </div>
+
+        <ol className="sr-only">
+          {PROJECTS.map((p) => (
+            <li key={p.id}>
+              <a href={p.url}>{p.title}: {p.tagline}</a>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  )
+}
