@@ -6,6 +6,7 @@ import { finePointer, gsap, onReady, palette as p, reduced, ScrollTrigger } from
 import { drawFan, fanOnPaper } from '../lib/shapes'
 import { getDict, getLocale, useT } from '../i18n'
 import { Arrow, Count, jumpTo, Magnetic, pixelBurst, PuneClock, puneHour, Scramble } from './Bits'
+import { GA_ID, openConsent } from './Consent'
 import { LangPicker } from './LangPicker'
 import { morSay } from './Mor'
 
@@ -122,7 +123,7 @@ function HatchFan() {
       }
       ctx.stroke()
       ctx.globalCompositeOperation = 'destination-in'
-      ctx.drawImage(mask, 0, 0)
+      if (mask.width && mask.height) ctx.drawImage(mask, 0, 0)
     }
     const tick = (t: number) => {
       if (visible) draw(t)
@@ -296,6 +297,10 @@ export function Footer() {
         <span className="footer-credit">{f.built}</span>
         <span className="footer-credit">
           {f.mapFrom} <a href="https://github.com/VictorCazanave/svg-maps" target="_blank" rel="noreferrer">svg-maps</a>, {f.license}
+        </span>
+        <span className="footer-credit footer-legal">
+          <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
+          {GA_ID && <> · <button type="button" onClick={openConsent}>Cookie settings</button></>}
         </span>
         <span>{t.story.coords}</span>
         <button className="footer-top-btn" onClick={() => jumpTo('top', 'Viral Dhoka')}>{f.backTop}</button>

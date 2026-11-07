@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Nav } from './components/Chrome'
+import { Consent } from './components/Consent'
 import { Cursor } from './components/Cursor'
 import { Detail } from './components/Detail'
 import { Loader } from './components/Loader'
@@ -22,6 +23,7 @@ export default function App() {
       <PixelWipe />
       <Loader />
       <Cursor />
+      <Consent />
     </>
   )
 }
