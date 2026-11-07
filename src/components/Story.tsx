@@ -8,6 +8,7 @@ import { INDIA_VIEWBOX, indiaLocations, NET, PIPE, PUNE_LATLON, puneXY, TARGET, 
 import { getDict, useT } from '../i18n'
 import { Arrow, jumpTo, Magnetic, Rise } from './Bits'
 import { paintMor } from './Mor'
+import { Apps, IdCard, SearchBar, Terminal, Win } from './StoryOS'
 
 /**
  * Hero and night are one sticky stage, so nothing separates them: the clouds close
@@ -22,7 +23,6 @@ const smooth = (a: number, b: number, x: number) => {
 
 type Tab = 'front' | 'back' | 'ai'
 const TAB_TARGET: Record<Tab, number> = { front: TARGET.CODE, back: TARGET.PIPE, ai: TARGET.NET }
-const TABS: Tab[] = ['front', 'back', 'ai']
 
 /** Packets running along a graph. Same engine for the backend and the neural net. */
 function GraphPulse({ graph, labels }: { graph: Graph; labels: boolean }) {
@@ -351,7 +351,6 @@ export function Story() {
     spin.current.drag = false
   }
 
-  const currentTab = st_.tabs[tab]
   const currentPin = PINS.find((x) => x.id === pinId)!
   const pinText = t.pins[currentPin.id]
   const stateName = (name: string) => t.states[name] ?? name
@@ -450,55 +449,54 @@ export function Story() {
         </div>
 
         <div ref={(el) => { panels.current[0] = el }} className="panel">
-          <p className="pixel panel-kicker">{st_.where.kicker}</p>
-          <h2 className="display panel-title">{st_.where.title}</h2>
-          <p className="panel-body">{st_.where.body}</p>
-          <p className="pixel panel-data">{st_.coords}</p>
-          <p className="display panel-deva" aria-hidden="true">{st_.where.big}</p>
+          <Win app="maps" go={goStep} tone="blue">
+            <SearchBar text={st_.where.title} on={active === 0} />
+            <p className="pixel panel-kicker">{st_.where.kicker}</p>
+            <h2 className="display panel-title">{st_.where.title}</h2>
+            <p className="panel-body">{st_.where.body}</p>
+            <p className="pixel panel-data">{st_.coords}</p>
+          </Win>
         </div>
 
         <div ref={(el) => { panels.current[1] = el }} className="panel is-right">
-          <p className="pixel panel-kicker">{st_.zoom.kicker}</p>
-          <h2 className="display panel-title">{stateName(hoverState || 'Maharashtra')}</h2>
-          <p className="panel-body">{st_.zoom.body}</p>
-          <button className="btn btn-paper" onClick={() => goStep(2)}>{st_.zoom.cta} <Arrow /></button>
+          <Win app="maps" title={st_.os.mapsIndia} go={goStep} tone="blue">
+            <p className="pixel panel-kicker">{st_.zoom.kicker}</p>
+            <h2 className="display panel-title">{stateName(hoverState || 'Maharashtra')}</h2>
+            <p className="panel-body">{st_.zoom.body}</p>
+            <button className="btn btn-ink" onClick={() => goStep(2)}>{st_.zoom.cta} <Arrow /></button>
+          </Win>
         </div>
 
         <div ref={(el) => { panels.current[2] = el }} className="panel">
-          <p className="pixel panel-kicker">{st_.study.kicker}</p>
-          <h2 className="display panel-title">{st_.study.title}</h2>
-          <p className="panel-body">{st_.study.body}</p>
-          <div className="chips" role="group" aria-label={st_.study.places}>
-            {PINS.map((x) => (
-              <button key={x.id} className={`chip-dark ${x.id === pinId ? 'is-on' : ''}`} onClick={() => setPinId(x.id)} aria-pressed={x.id === pinId}>
-                {x.name}
-              </button>
-            ))}
-          </div>
-          <p className="panel-note" key={currentPin.id}>
-            <b className="pixel">{pinText.place}</b> {pinText.note}
-          </p>
+          <Win app="id" go={goStep}>
+            <p className="pixel panel-kicker">{st_.study.kicker}</p>
+            <IdCard pinId={pinId} />
+            <p className="panel-body">{st_.study.body}</p>
+            <div className="chips" role="group" aria-label={st_.study.places}>
+              {PINS.map((x) => (
+                <button key={x.id} className={`chip-light ${x.id === pinId ? 'is-on' : ''}`} onClick={() => setPinId(x.id)} aria-pressed={x.id === pinId}>
+                  {x.name}
+                </button>
+              ))}
+            </div>
+            <p className="panel-note" key={currentPin.id}>
+              <b className="pixel">{pinText.place}</b> {pinText.note}
+            </p>
+          </Win>
         </div>
 
         <div ref={(el) => { panels.current[3] = el }} className="panel is-right">
-          <p className="pixel panel-kicker">{st_.build.kicker}</p>
-          <h2 className="display panel-title">{currentTab.title}</h2>
-          <div className="chips" role="tablist" aria-label={st_.build.kicker}>
-            {TABS.map((id) => (
-              <button key={id} role="tab" aria-selected={id === tab} className={`chip-dark ${id === tab ? 'is-on' : ''}`} onClick={() => chooseTab(id)}>
-                {st_.tabs[id].label}
-              </button>
-            ))}
-          </div>
-          <p className="panel-body">{currentTab.body}</p>
-          <p className="pixel panel-data">{currentTab.hint}</p>
+          <Win app="term" go={goStep} tone="night">
+            <p className="pixel panel-kicker">{st_.build.kicker}</p>
+            <Terminal tab={tab} onTab={chooseTab} />
+          </Win>
         </div>
 
         <div ref={(el) => { panels.current[4] = el }} className="panel">
-          <p className="pixel panel-kicker">{st_.next.kicker}</p>
-          <h2 className="display panel-title">{st_.next.title}</h2>
-          <p className="panel-body">{st_.next.body}</p>
-          <button className="btn btn-paper" onClick={() => jumpTo('work', t.nav.work)}>{st_.next.cta} <Arrow /></button>
+          <Win app="apps" go={goStep}>
+            <p className="pixel panel-kicker">{st_.apps.kicker}</p>
+            <Apps />
+          </Win>
         </div>
       </div>
     </section>

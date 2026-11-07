@@ -147,7 +147,7 @@ src/
   styles/tokens.css     every colour, size, ease and layer
 public/
   work/<id>.webp        1280 by 800 screenshot for the detail sheet
-  work/<id>-cover.png   150 by 170 dithered cover for the tape
+  work/<id>-cover.png   512 by 768 pixel-art emblem for the tape (64 by 96 grid, 8x)
   fonts/                self-hosted Boska, Gambetta and General Sans
 ```
 
@@ -167,7 +167,7 @@ npm run build
 ## Add a project
 
 1. Add an entry to `PROJECTS` in [`src/data/site.ts`](src/data/site.ts). Custom domains go first.
-2. Drop a 1280 by 800 screenshot at `public/work/<id>.webp` and a 150 by 170 dithered cover at `public/work/<id>-cover.png`.
+2. Drop a 1280 by 800 screenshot at `public/work/<id>.webp` and a 512 by 768 pixel-art emblem at `public/work/<id>-cover.png` (drawn on a 64 by 96 grid in the palette, scaled 8x with hard pixels).
 3. Push to `main`.
 
 ## Deploy

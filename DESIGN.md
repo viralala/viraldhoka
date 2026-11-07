@@ -60,6 +60,7 @@ Page scroll is never taken over. The hero story is one sticky stage, and everyth
 | Sky | `src/gl/Sky.tsx` | WebGL dither clouds at half resolution. They billow, part around the pointer, follow it slightly, and close into navy on scroll |
 | Sky life | `src/gl/SkyLife.tsx` | Pixel birds that scatter from the pointer, kites that lean toward it |
 | Story | `src/components/Story.tsx` | One particle system: a globe you can spin, India you can hover, Pune with pins Mor walks between, three "what I build" demos, a sunrise |
+| Mor OS | `src/components/StoryOS.tsx` | The night half of the story as app windows. Maps types "Pune, India" beside the globe, a Student ID card tilts, catches a hologram and flips, a Terminal runs frontend, backend and ai to change the particles, and Apps opens the live sites. Every title bar has a tab per app, and windows drag on desktop |
 | Particles | `src/gl/Particles.tsx` | 34,000 pixels (16,000 on phones), one buffer per shape, click sends a shock ring through them |
 | Shelf | `src/components/Shelf.tsx` | Tapes on a curved arc that recedes into depth. An endless loop that turns one tape every 3.4 seconds, pauses while you use it, and moves by drag, sideways swipe, arrows, keys or the month ruler. Page scroll only leans the tapes |
 | Detail sheet | `src/components/Detail.tsx` | Paper grows out of the cover, text rises in masks, the screenshot bleeds in like ink |
