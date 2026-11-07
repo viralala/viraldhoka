@@ -37,9 +37,9 @@ export function SkyLife({ closeRef }: { closeRef: React.RefObject<number> }) {
     // On phones the headline fills the width, so the kites stay up above it
     const narrow = W < 220
     const kites: Kite[] = [
-      { x: W * 0.14, y: H * 0.2, home: 0.14, hy: narrow ? 0.14 : 0.26, color: p.s3, alt: p.paper, phase: 0, tail: [] },
-      { x: W * 0.86, y: H * 0.2, home: 0.86, hy: narrow ? 0.17 : 0.34, color: p.g3, alt: p.paper, phase: 2.1, tail: [] },
-      { x: W * 0.72, y: H * 0.16, home: narrow ? 0.56 : 0.72, hy: narrow ? 0.1 : 0.16, color: p.ink, alt: p.s2, phase: 4, tail: [] },
+      { x: W * 0.14, y: H * 0.2, home: 0.14, hy: narrow ? 0.14 : 0.26, color: p.pk3, alt: p.paper, phase: 0, tail: [] },
+      { x: W * 0.86, y: H * 0.2, home: 0.86, hy: narrow ? 0.17 : 0.34, color: p.bl3, alt: p.paper, phase: 2.1, tail: [] },
+      { x: W * 0.72, y: H * 0.16, home: narrow ? 0.56 : 0.72, hy: narrow ? 0.1 : 0.16, color: p.ink, alt: p.pk2, phase: 4, tail: [] },
     ]
     kites.forEach((k) => (k.tail = Array.from({ length: 9 }, () => ({ x: k.x, y: k.y }))))
 

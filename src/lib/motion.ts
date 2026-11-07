@@ -10,18 +10,20 @@ export const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').mat
 export const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches
 
 export const palette = {
-  paper: '#fbf6ec',
-  paper2: '#f4ecdd',
+  paper: '#fcfbfe',
+  paper2: '#f2f1f8',
   ink: '#1b2350',
   night: '#141a40',
   night2: '#202a5e',
-  onNight: '#f6efe2',
-  s1: '#fde6cc',
-  s2: '#f9c794',
-  s3: '#f2a65a',
-  g1: '#d6ecd6',
-  g2: '#a8d5b0',
-  g3: '#6bb58a',
+  onNight: '#f6f5fc',
+  // Pink ramp, light to strong
+  pk1: '#fde4ee',
+  pk2: '#f6bfd5',
+  pk3: '#ec8db5',
+  // Blue ramp, light to strong
+  bl1: '#dce7fc',
+  bl2: '#a9c4f5',
+  bl3: '#6b95e8',
 }
 
 export const hexToRgb = (hex: string): [number, number, number] => {

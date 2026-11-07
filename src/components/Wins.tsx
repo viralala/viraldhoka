@@ -1,8 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { COMMITS } from '../data/commits'
 import { ARCHIVE, HACKATHONS, PROJECTS, RESEARCH } from '../data/site'
 import { gsap, palette as p, reduced, ScrollTrigger } from '../lib/motion'
-import { Arrow, Rise } from './Bits'
+import { Arrow, Count, Rise } from './Bits'
 import { detailApi } from './Detail'
 import { paintMor } from './Mor'
 
@@ -64,7 +64,7 @@ function Funnel() {
         const x = (i % COLS) * (CELL + G)
         const y = Math.floor(i / COLS) * (CELL + G)
         const r = rank[i]
-        ctx.fillStyle = r === 2 && state.v >= 0.98 ? p.s3 : r < 3 && state.v >= 0.98 ? p.g3 : r < alive ? p.ink : 'rgba(27, 35, 80, 0.1)'
+        ctx.fillStyle = r === 2 && state.v >= 0.98 ? p.pk3 : r < 3 && state.v >= 0.98 ? p.bl3 : r < alive ? p.ink : 'rgba(27, 35, 80, 0.1)'
         ctx.fillRect(x, y, CELL, CELL)
       }
       if (label.current) {
@@ -96,25 +96,6 @@ function Funnel() {
   )
 }
 
-function Count({ to, suffix = '' }: { to: number; suffix?: string }) {
-  const ref = useRef<HTMLSpanElement>(null)
-  useLayoutEffect(() => {
-    const el = ref.current!
-    const fmt = (n: number) => Math.round(n).toLocaleString('en-IN') + suffix
-    el.textContent = fmt(reduced ? to : 0)
-    if (reduced) return
-    const s = { v: 0 }
-    const st = ScrollTrigger.create({
-      trigger: el,
-      start: 'top 96%',
-      once: true,
-      onEnter: () => gsap.to(s, { v: to, duration: 1.8, ease: 'power3.out', onUpdate: () => (el.textContent = fmt(s.v)) }),
-    })
-    return () => st.kill()
-  }, [to, suffix])
-  return <span ref={ref} />
-}
-
 const openProject = (id: string, el: HTMLElement) => {
   const project = PROJECTS.find((x) => x.id === id)
   if (project) detailApi.open(project, () => el.getBoundingClientRect())
@@ -130,7 +111,7 @@ function Calendar() {
     const weeks = Math.ceil(COMMITS.cells.length / 7)
     c.width = weeks * CELL
     c.height = 7 * CELL
-    const ramp = [p.paper2, p.g1, p.g2, p.s2, p.s3]
+    const ramp = [p.paper2, p.bl1, p.bl2, p.pk2, p.pk3]
     const level = (n: number) => (n === 0 ? 0 : n < 3 ? 1 : n < 6 ? 2 : n < 12 ? 3 : 4)
     const start = new Date(COMMITS.start + 'T00:00:00Z')
     const shown = { v: reduced ? 1 : 0 }
@@ -179,18 +160,18 @@ export function Wins() {
           <Podium />
           <Funnel />
           <div className="cesac-card" data-dark>
-            <p className="pixel">CESAC, in just over a week</p>
+            <p className="pixel">CESAC, live at cesac.in</p>
             <dl className="stats">
-              <div><dt>Students registered</dt><dd className="display"><Count to={1554} /></dd></div>
-              <div><dt>Records submitted</dt><dd className="display"><Count to={5683} /></dd></div>
-              <div><dt>Page views</dt><dd className="display"><Count to={62000} suffix="+" /></dd></div>
+              <div><dt>Students registered</dt><dd className="display"><Count to={2400} suffix="+" /></dd></div>
+              <div><dt>Records submitted</dt><dd className="display"><Count to={11000} suffix="+" /></dd></div>
+              <div><dt>Page views</dt><dd className="display"><Count to={200000} suffix="+" /></dd></div>
             </dl>
             <button className="btn btn-paper" onClick={(e) => openProject('cesac', e.currentTarget)}>Open CESAC <Arrow /></button>
           </div>
         </div>
       </section>
 
-      <section className="log wrap" data-mor="activity">
+      <section className="log wrap" id="research" data-mor="activity">
         <div className="log-side">
           <Rise as="h2" className="display section-title" text={'Research\nand deep dives'} onScroll />
         </div>

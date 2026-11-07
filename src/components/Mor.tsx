@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { gsap, onReady, palette as p, reduced, ScrollTrigger } from '../lib/motion'
-import { drawFanPixels, fanOnPaper } from '../lib/shapes'
+import { gsap, onReady, reduced, ScrollTrigger } from '../lib/motion'
+import { drawFanPixels, fanMor } from '../lib/shapes'
 
+// Mor's own colours. They are fixed on purpose and do not follow the site palette.
 const COLORS: Record<string, string> = {
-  n: p.ink,
+  n: '#1b2350',
   b: '#34408a',
-  w: p.paper,
-  s: p.s3,
-  o: p.s2,
+  w: '#fbf6ec',
+  s: '#f2a65a',
+  o: '#f9c794',
   g: '#3f8f7f',
   G: '#2b6a6c',
 }
@@ -196,14 +197,14 @@ export function Mor() {
       n: 24,
       duration: 0.5,
       ease: 'power2.out',
-      onUpdate: () => fan.current && drawFanPixels(fan.current, st.n, fanOnPaper),
+      onUpdate: () => fan.current && drawFanPixels(fan.current, st.n, fanMor),
     })
     window.setTimeout(() => {
       gsap.to(st, {
         n: 0,
         duration: 0.35,
         ease: 'power2.in',
-        onUpdate: () => fan.current && drawFanPixels(fan.current, st.n, fanOnPaper),
+        onUpdate: () => fan.current && drawFanPixels(fan.current, st.n, fanMor),
         onComplete: () => {
           setFanned(false)
           setSay('')

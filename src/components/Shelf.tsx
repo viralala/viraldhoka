@@ -1,12 +1,16 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { PROJECTS, type Project } from '../data/site'
-import { getLenis, gsap, reduced, ScrollTrigger } from '../lib/motion'
+import { gsap, reduced, scrollVelocity } from '../lib/motion'
 import { detailApi } from './Detail'
 
 const N = PROJECTS.length
 const COPIES = 3
 const TOTAL = N * COPIES
 const P = 1400
+/** How long each tape stays in front before the shelf turns on its own */
+const AUTO_MS = 3400
+/** After you touch the shelf, it waits this long before turning on its own again */
+const IDLE_MS = 6500
 const MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov']
 const FIRST_MONTH = 4
 const yearPos = (m: number) => (m - FIRST_MONTH + 0.5) / MONTHS.length
@@ -76,7 +80,6 @@ export function Shelf() {
   useLayoutEffect(() => {
     const wrap = stageWrap.current!
     const shelf = wrap.querySelector('.shelf') as HTMLElement
-    const lenis = () => getLenis()
 
     // Geometry, in the units of the current tape height
     let H = 0
@@ -118,34 +121,49 @@ export function Shelf() {
     }
     measure()
 
-    // The scroll position is the single source of truth for which tape is active
-    let T = N
-    let s = N
+    // The shelf has its own position, in tapes. It is unbounded, so it loops forever,
+    // and the page scroll never drives it: scrolling the page just moves past.
+    let T = 0
+    let s = 0
     let settle = 0
     let dragging = false
     let inView = false
+    let focused = false
     let detailOpen = false
+    let lastTouch = -1e9
+    let autoAt = performance.now() + AUTO_MS
 
-    const st = ScrollTrigger.create({
-      trigger: section.current,
-      start: 'top top',
-      end: 'bottom bottom',
-      onUpdate: (self) => {
-        T = N + self.progress * (N - 1)
-        window.clearTimeout(settle)
-        settle = window.setTimeout(() => (T = Math.round(T)), 160)
+    const io = new IntersectionObserver(
+      ([en]) => {
+        inView = en.isIntersecting
+        focused = en.intersectionRatio >= 0.5
+        if (inView) autoAt = Math.max(autoAt, performance.now() + 1600)
       },
-      onToggle: (self) => (inView = self.isActive),
-    })
+      { threshold: [0, 0.5] },
+    )
+    io.observe(section.current!)
 
-    const yFor = (i: number) => st.start + (i / (N - 1)) * (st.end - st.start)
-    const go = (i: number) => {
-      const target = Math.max(0, Math.min(N - 1, i))
-      const l = lenis()
-      if (l) l.scrollTo(yFor(target), { duration: 0.9 })
-      else window.scrollTo(0, yFor(target))
+    const settleSoon = () => {
+      window.clearTimeout(settle)
+      settle = window.setTimeout(() => (T = Math.round(T)), 160)
+    }
+    const touched = () => {
+      lastTouch = performance.now()
+      autoAt = lastTouch + IDLE_MS
     }
     const current = () => mod(Math.round(s), N)
+    // Goes the short way round to a project
+    const go = (i: number) => {
+      const base = Math.round(T)
+      let dlt = mod(i - mod(base, N), N)
+      if (dlt > N / 2) dlt -= N
+      T = base + dlt
+      touched()
+    }
+    const step = (dlt: number) => {
+      T = Math.round(T) + dlt
+      touched()
+    }
 
     const coverRect = () => {
       const v = mod(Math.round(s), TOTAL)
@@ -154,9 +172,13 @@ export function Shelf() {
     const open = () => {
       T = Math.round(s)
       detailOpen = true
-      detailApi.open(PROJECTS[current()], coverRect, () => (detailOpen = false))
+      touched()
+      detailApi.open(PROJECTS[current()], coverRect, () => {
+        detailOpen = false
+        touched()
+      })
     }
-    api.current = { go, step: (dlt) => go(current() + dlt), open }
+    api.current = { go, step, open }
 
     // Hover and pointer state
     const mouse = { x: -1, y: -1 }
@@ -176,11 +198,26 @@ export function Shelf() {
 
     let dotYear = yearPos(PROJECTS[0].month)
     let last = performance.now()
+    let lean = 0
     const tick = () => {
       const now = performance.now()
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
       if (!inView && activeIdx >= 0) return
+
+      // It keeps turning on its own, one tape at a time, unless you are using it
+      const idle = !dragging && !detailOpen && hover < 0 && !document.hidden && !reduced
+      if (!idle) autoAt = Math.max(autoAt, now + 900)
+      else if (now >= autoAt) {
+        T = Math.round(T) + 1
+        autoAt = now + AUTO_MS
+      }
+      const auto = idle && now - lastTouch > IDLE_MS ? 1 - Math.max(0, Math.min(1, (autoAt - now) / AUTO_MS)) : 0
+      ring.current?.style.setProperty('--auto', auto.toFixed(3))
+
+      // Scrolling the page past leans the tapes a little, it never moves them
+      const v = Math.max(-8, Math.min(8, scrollVelocity() * 0.35))
+      lean += (v - lean) * (1 - Math.exp(-6 * dt))
 
       const k = dragging ? 18 : 9
       s = reduced ? T : s + (T - s) * (1 - Math.exp(-k * dt))
@@ -221,7 +258,7 @@ export function Shelf() {
         const x = xsc(u) * kk
         const y = (H * 0.5 * (1 - sc) * 0.42 + o * H * 0.012 - lifts[v] * H * 0.05) * kk
         const ry = Math.sign(u) * Math.min(1, Math.abs(u) / U) * 26 * (1 - o) - 90 * o + tiltY * o
-        const rx = tiltX * o
+        const rx = tiltX * o - lean * (0.5 + 0.5 * (1 - o))
         el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateX(${rx}deg) rotateY(${ry}deg)`
         el.style.zIndex = String(Math.round(3000 + z))
         depth[v] = z
@@ -248,9 +285,11 @@ export function Shelf() {
 
     // Pointer: tilt, hover, drag and click all live on the shelf
     let downX = 0
-    let downScroll = 0
+    let downT = 0
     let moved = false
-    const perTape = () => (st.end - st.start) / (N - 1)
+    let vx = 0
+    let lastX = 0
+    let lastMoveT = 0
     const relOf = (v: number) => {
       const r = mod(v - s, TOTAL)
       return r >= TOTAL / 2 ? r - TOTAL : r
@@ -281,16 +320,22 @@ export function Shelf() {
       const dx = e.clientX - downX
       if (Math.abs(dx) > 5) moved = true
       if (!moved) return
-      const y = downScroll - (dx / (ws + gap)) * perTape()
-      const l = lenis()
-      if (l) l.scrollTo(y, { immediate: true })
-      else window.scrollTo(0, y)
+      const now = performance.now()
+      const ms = Math.max(1, now - lastMoveT)
+      vx = vx * 0.6 + ((e.clientX - lastX) / ms) * 0.4
+      lastX = e.clientX
+      lastMoveT = now
+      T = downT - dx / (ws + gap)
+      touched()
     }
     const onDown = (e: PointerEvent) => {
       dragging = true
       moved = false
-      downX = e.clientX
-      downScroll = window.scrollY
+      downX = lastX = e.clientX
+      lastMoveT = performance.now()
+      vx = 0
+      downT = T
+      touched()
     }
     const onUp = (e: PointerEvent) => {
       const wasDrag = moved
@@ -298,26 +343,41 @@ export function Shelf() {
       dragging = false
       moved = false
       if (wasDrag) {
-        go(Math.round(T - N))
+        // A flick carries on for a tape or two
+        const fling = Math.max(-3, Math.min(3, (-vx * 220) / (ws + gap)))
+        T = Math.round(T + fling)
+        touched()
         return
       }
       if (!wasDown) return
       const v = tapeAt(e.clientX, e.clientY)
       if (v < 0) return
       if (Math.abs(relOf(v)) < 0.5) open()
-      else go(mod(v, N))
+      else step(Math.round(relOf(v)))
     }
     const onLeave = () => {
       mouse.x = mouse.y = -1
       hover = -1
     }
+    // A sideways wheel or trackpad swipe turns the shelf. Plain vertical scrolling is
+    // left to the page, so the section never traps you.
+    const onWheel = (e: WheelEvent) => {
+      const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.shiftKey ? e.deltaY : 0
+      if (!dx) return
+      e.preventDefault()
+      e.stopPropagation()
+      T += dx / 140
+      touched()
+      settleSoon()
+    }
     wrap.addEventListener('pointermove', onMove, { passive: true })
     wrap.addEventListener('pointerleave', onLeave)
     shelf.addEventListener('pointerdown', onDown)
+    shelf.addEventListener('wheel', onWheel, { passive: false })
     window.addEventListener('pointerup', onUp)
 
     const onKey = (e: KeyboardEvent) => {
-      if (!inView || detailOpen) return
+      if (!focused || detailOpen) return
       if (e.key === 'ArrowLeft') api.current.step(-1)
       else if (e.key === 'ArrowRight') api.current.step(1)
       else if (e.key === 'Enter' && (e.target as Element).tagName !== 'A' && (e.target as Element).tagName !== 'BUTTON') open()
@@ -327,11 +387,12 @@ export function Shelf() {
     return () => {
       gsap.ticker.remove(tick)
       ro.disconnect()
-      st.kill()
+      io.disconnect()
       window.clearTimeout(settle)
       wrap.removeEventListener('pointermove', onMove)
       wrap.removeEventListener('pointerleave', onLeave)
       shelf.removeEventListener('pointerdown', onDown)
+      shelf.removeEventListener('wheel', onWheel)
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('keydown', onKey)
     }
@@ -364,12 +425,13 @@ export function Shelf() {
   }
 
   return (
-    <section ref={section} className="work" id="work" data-mor="work" style={{ height: `calc(100vh + ${N * 34}vh)` }}>
+    <section ref={section} className="work" id="work" data-mor="work">
       <div ref={stageWrap} className="work-pin">
         <div ref={probe} className="work-probe" />
         <header className="work-head wrap">
           <p className="pixel">Selected work</p>
-          <p className="pixel">{N} tapes</p>
+          <p className="pixel work-hint">Drag, swipe or use the arrows</p>
+          <p className="pixel">{N} tapes, on loop</p>
         </header>
 
         <div className="halftone halftone-l deva" aria-hidden="true"><span>का</span><span>म</span></div>

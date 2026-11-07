@@ -1,28 +1,28 @@
-/* Tiranga Dawn: design tokens. Everything visual derives from this file. */
+/* Pastel Dawn: design tokens. Everything visual derives from this file. */
 :root {
   /* Surfaces */
-  --paper: #fbf6ec;
-  --paper-2: #f4ecdd;
+  --paper: #fcfbfe;
+  --paper-2: #f2f1f8;
   --line: rgba(27, 35, 80, 0.14);
 
-  /* Ink: chakra navy, softened */
+  /* Ink: navy, softened */
   --ink: #1b2350;
   --ink-2: #4b5379;
   --ink-3: #6f7695;
   --night: #141a40;
   --night-2: #202a5e;
-  --on-night: #f6efe2;
+  --on-night: #f6f5fc;
   --on-night-2: #aab0cf;
 
-  /* Saffron ramp */
-  --saffron-1: #fde6cc;
-  --saffron-2: #f9c794;
-  --saffron-3: #f2a65a;
+  /* Pink ramp */
+  --pink-1: #fde4ee;
+  --pink-2: #f6bfd5;
+  --pink-3: #ec8db5;
 
-  /* Green ramp */
-  --green-1: #d6ecd6;
-  --green-2: #a8d5b0;
-  --green-3: #6bb58a;
+  /* Blue ramp */
+  --blue-1: #dce7fc;
+  --blue-2: #a9c4f5;
+  --blue-3: #6b95e8;
 
   /* Type */
   --font-display: 'Boska', 'Times New Roman', serif;

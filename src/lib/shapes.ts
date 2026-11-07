@@ -15,19 +15,29 @@ export type FanColors = {
 }
 
 export const fanOnPaper: FanColors = {
-  barb: p.g2,
-  barbAlt: p.g1,
-  stem: p.g3,
-  ring: p.s2,
-  eye: p.s3,
+  barb: p.bl2,
+  barbAlt: p.bl1,
+  stem: p.bl3,
+  ring: p.pk2,
+  eye: p.pk3,
   core: p.ink,
   body: p.ink,
 }
 
+/** Mor's own tail, in his fixed colours. */
+export const fanMor: FanColors = {
+  barb: '#a8d5b0',
+  barbAlt: '#d6ecd6',
+  stem: '#6bb58a',
+  ring: '#f9c794',
+  eye: '#f2a65a',
+  core: '#1b2350',
+  body: '#1b2350',
+}
+
 /**
- * The 24 feather fan. 24 is deliberate: it echoes the spokes of the Ashoka Chakra
- * without using the emblem itself. `count` can be fractional, which is how the
- * loader grows one feather at a time.
+ * The 24 feather fan. `count` can be fractional, which is how the loader grows
+ * one feather at a time.
  */
 export function drawFan(ctx: CanvasRenderingContext2D, w: number, h: number, count = 24, c: FanColors = fanOnPaper) {
   const cx = w / 2
@@ -160,14 +170,14 @@ const indiaXY = (lat: number, lon: number): [number, number] => [
 ]
 const PUNE_MAP = indiaXY(PUNE_LATLON.lat, PUNE_LATLON.lon)
 
-function flagGradient(ctx: CanvasRenderingContext2D, h: number) {
+function dawnGradient(ctx: CanvasRenderingContext2D, h: number) {
   const g = ctx.createLinearGradient(0, 0, 0, h)
-  g.addColorStop(0, p.s3)
-  g.addColorStop(0.3, p.s2)
+  g.addColorStop(0, p.bl3)
+  g.addColorStop(0.3, p.bl2)
   g.addColorStop(0.46, p.onNight)
   g.addColorStop(0.62, p.onNight)
-  g.addColorStop(0.78, p.g2)
-  g.addColorStop(1, p.g3)
+  g.addColorStop(0.78, p.pk2)
+  g.addColorStop(1, p.pk3)
   return g
 }
 
@@ -175,7 +185,7 @@ function indiaTarget() {
   const { c, ctx } = blank()
   ctx.save()
   ctx.setTransform(MAP_K, 0, 0, MAP_K, MAP_X, MAP_Y)
-  ctx.fillStyle = flagGradient(ctx, MAP_H)
+  ctx.fillStyle = dawnGradient(ctx, MAP_H)
   for (const l of india.locations) ctx.fill(new Path2D(l.path))
   const [px, py] = PUNE_MAP
   ctx.globalCompositeOperation = 'destination-out'
@@ -183,7 +193,7 @@ function indiaTarget() {
   ctx.arc(px, py, 15, 0, Math.PI * 2)
   ctx.fill()
   ctx.globalCompositeOperation = 'source-over'
-  ctx.fillStyle = p.s3
+  ctx.fillStyle = p.pk3
   ctx.beginPath()
   ctx.arc(px, py, 9, 0, Math.PI * 2)
   ctx.fill()
@@ -248,7 +258,7 @@ function puneTarget() {
   line(ctx, [[18.51, 73.875], [18.5, 73.92], [18.49, 73.97], [18.485, 74.0]], 3, road)
   line(ctx, [[18.535, 73.885], [18.56, 73.92], [18.585, 73.965], [18.6, 74.0]], 3, road)
   // Mutha and Mula, meeting at the Sangam
-  const river = '#f6efe2'
+  const river = p.onNight
   line(ctx, [[18.44, 73.76], [18.465, 73.79], [18.49, 73.815], [18.51, 73.84], [18.525, 73.855], [18.54, 73.87]], 7, river)
   line(ctx, [[18.585, 73.77], [18.57, 73.81], [18.565, 73.84], [18.55, 73.86], [18.54, 73.87]], 6, river)
   line(ctx, [[18.54, 73.87], [18.535, 73.9], [18.53, 73.93], [18.545, 73.97], [18.56, 74.0]], 7, river)
@@ -298,7 +308,7 @@ function graphTarget(g: Graph, boxy: boolean) {
   }
   const last = Math.max(...g.nodes.map((n) => n.layer))
   for (const n of g.nodes) {
-    ctx.fillStyle = n.layer === 0 ? p.s2 : n.layer === last ? p.g2 : p.onNight
+    ctx.fillStyle = n.layer === 0 ? p.pk2 : n.layer === last ? p.bl2 : p.onNight
     if (boxy) ctx.fillRect(n.x - 38, n.y - 38, 76, 76)
     else {
       ctx.beginPath()
@@ -314,13 +324,13 @@ function codeTarget() {
   ctx.lineCap = 'square'
   ctx.lineJoin = 'miter'
   ctx.lineWidth = 46
-  ctx.strokeStyle = p.s2
+  ctx.strokeStyle = p.pk2
   ctx.beginPath()
   ctx.moveTo(165, 130)
   ctx.lineTo(45, 256)
   ctx.lineTo(165, 382)
   ctx.stroke()
-  ctx.strokeStyle = p.g2
+  ctx.strokeStyle = p.bl2
   ctx.beginPath()
   ctx.moveTo(347, 130)
   ctx.lineTo(467, 256)
@@ -338,11 +348,11 @@ function sunriseTarget() {
   const { c, ctx } = blank()
   const cx = 256
   const cy = 330
-  ctx.fillStyle = p.s3
+  ctx.fillStyle = p.pk3
   ctx.beginPath()
   ctx.arc(cx, cy, 120, Math.PI, 0)
   ctx.fill()
-  ctx.strokeStyle = p.s2
+  ctx.strokeStyle = p.pk2
   ctx.lineWidth = 12
   for (let i = 0; i < 13; i++) {
     const a = Math.PI + (Math.PI * i) / 12
@@ -353,9 +363,9 @@ function sunriseTarget() {
   }
   ctx.fillStyle = p.onNight
   ctx.fillRect(30, cy + 14, 452, 12)
-  ctx.fillStyle = p.g2
+  ctx.fillStyle = p.bl2
   ctx.fillRect(80, cy + 46, 352, 12)
-  ctx.fillStyle = p.g3
+  ctx.fillStyle = p.bl3
   ctx.fillRect(140, cy + 78, 232, 12)
   return c
 }
@@ -388,7 +398,7 @@ function sample(canvas: HTMLCanvasElement, n: number) {
   return out
 }
 
-/** Land from the bitmask, oceans as a sparse grid, India tinted in flag order. */
+/** Land from the bitmask, oceans as a sparse grid, India tinted like the dawn sky. */
 function globeTarget(n: number) {
   const bytes = Uint8Array.from(atob(LAND), (ch) => ch.charCodeAt(0))
   const land = (lat: number, lon: number) => {

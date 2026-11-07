@@ -7,7 +7,7 @@ export const wipe: Wipe = { cover: async () => {}, reveal: async () => {} }
 
 const CELL = 48
 
-/** The page transition: a sweep of pixels moving saffron, green, then night. */
+/** The page transition: a sweep of pixels moving pink, blue, then night. */
 export function PixelWipe() {
   const canvas = useRef<HTMLCanvasElement>(null)
   const tag = useRef<HTMLDivElement>(null)
@@ -37,7 +37,7 @@ export function PixelWipe() {
       cols = Math.ceil(c.width / CELL)
       rows = Math.ceil(c.height / CELL)
       seeds = Array.from({ length: cols * rows }, () => Math.random())
-      dither = checker(p.s3)
+      dither = checker(p.pk3)
       draw()
     }
 
@@ -52,7 +52,7 @@ export function PixelWipe() {
           const gone = Math.max(0, Math.min(1, (st.out * 1.5 - t) / 0.5))
           const s = stageOf(inn - gone)
           if (!s) continue
-          ctx.fillStyle = s === 1 ? dither : s === 2 ? p.s2 : s === 3 ? p.g2 : p.night
+          ctx.fillStyle = s === 1 ? dither : s === 2 ? p.pk2 : s === 3 ? p.bl2 : p.night
           ctx.fillRect(x * CELL, y * CELL, CELL, CELL)
         }
       }

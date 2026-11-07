@@ -1,6 +1,6 @@
 <div align="center">
 
-<a href="https://viraldhoka.vercel.app"><img src=".github/readme/hero.jpg" alt="Making the web feel alive: the hero of viraldhoka.vercel.app, a pixel sky with saffron clouds above and green clouds below" width="100%" /></a>
+<a href="https://viraldhoka.vercel.app"><img src=".github/readme/hero.jpg" alt="Making the web feel alive: the hero of viraldhoka.vercel.app, a pixel sky with blue clouds above and pink clouds below" width="100%" /></a>
 
 <br />
 <br />
@@ -14,19 +14,19 @@ Computer engineering student at VIT Pune. Creative frontend, full stack, backend
 
 <br />
 
-<a href="https://viraldhoka.vercel.app"><img alt="Live site" src="https://img.shields.io/badge/Live-viraldhoka.vercel.app-F2A65A?style=for-the-badge&labelColor=1B2350" /></a>
-<a href="https://www.linkedin.com/in/viral-dhoka-1aa3b4318/"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-Viral_Dhoka-6BB58A?style=for-the-badge&labelColor=1B2350" /></a>
-<a href="https://www.instagram.com/viraldrafts/"><img alt="Instagram" src="https://img.shields.io/badge/Instagram-@viraldrafts-F9C794?style=for-the-badge&labelColor=1B2350" /></a>
-<a href="mailto:viralnotviral@gmail.com"><img alt="Email" src="https://img.shields.io/badge/Email-Say_hello-A8D5B0?style=for-the-badge&labelColor=1B2350" /></a>
+<a href="https://viraldhoka.vercel.app"><img alt="Live site" src="https://img.shields.io/badge/Live-viraldhoka.vercel.app-EC8DB5?style=for-the-badge&labelColor=1B2350" /></a>
+<a href="https://www.linkedin.com/in/viral-dhoka-1aa3b4318/"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-Viral_Dhoka-6B95E8?style=for-the-badge&labelColor=1B2350" /></a>
+<a href="https://www.instagram.com/viraldrafts/"><img alt="Instagram" src="https://img.shields.io/badge/Instagram-@viraldrafts-F6BFD5?style=for-the-badge&labelColor=1B2350" /></a>
+<a href="mailto:viralnotviral@gmail.com"><img alt="Email" src="https://img.shields.io/badge/Email-Say_hello-A9C4F5?style=for-the-badge&labelColor=1B2350" /></a>
 
 <br />
 
-<img alt="Vite" src="https://img.shields.io/badge/Vite-8-1B2350?style=flat-square&logo=vite&logoColor=F9C794" />
-<img alt="React" src="https://img.shields.io/badge/React-19-1B2350?style=flat-square&logo=react&logoColor=A8D5B0" />
-<img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-1B2350?style=flat-square&logo=typescript&logoColor=F9C794" />
-<img alt="GSAP" src="https://img.shields.io/badge/GSAP-ScrollTrigger-1B2350?style=flat-square&logo=greensock&logoColor=A8D5B0" />
-<img alt="WebGL" src="https://img.shields.io/badge/WebGL-hand_written-1B2350?style=flat-square&logo=webgl&logoColor=F9C794" />
-<img alt="Vercel" src="https://img.shields.io/badge/Vercel-auto_deploy-1B2350?style=flat-square&logo=vercel&logoColor=A8D5B0" />
+<img alt="Vite" src="https://img.shields.io/badge/Vite-8-1B2350?style=flat-square&logo=vite&logoColor=F6BFD5" />
+<img alt="React" src="https://img.shields.io/badge/React-19-1B2350?style=flat-square&logo=react&logoColor=A9C4F5" />
+<img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-1B2350?style=flat-square&logo=typescript&logoColor=F6BFD5" />
+<img alt="GSAP" src="https://img.shields.io/badge/GSAP-ScrollTrigger-1B2350?style=flat-square&logo=greensock&logoColor=A9C4F5" />
+<img alt="WebGL" src="https://img.shields.io/badge/WebGL-hand_written-1B2350?style=flat-square&logo=webgl&logoColor=F6BFD5" />
+<img alt="Vercel" src="https://img.shields.io/badge/Vercel-auto_deploy-1B2350?style=flat-square&logo=vercel&logoColor=A9C4F5" />
 
 </div>
 
@@ -34,19 +34,19 @@ Computer engineering student at VIT Pune. Creative frontend, full stack, backend
 
 ## The idea
 
-A pixel sky in flag order: **saffron clouds above, clear ivory between, green clouds below**, with chakra navy as the ink. Every shade is a pastel step from the real flag colours, so it reads as India without ever showing a flag.
+A pixel sky at dawn: **blue clouds above, clear white between, a pink glow below**, with navy as the ink. Every colour is a soft pastel, so the page stays light and readable.
 
-As you scroll, the clouds close into night and a single particle system tells the story. Then the work sits on a curved shelf of tapes, each cover a real screenshot dithered into the palette.
+As you scroll, the clouds close into night and a single particle system tells the story. Then the work sits on a curved shelf of tapes that turns on its own, each cover a real screenshot dithered into the palette.
 
-**Mor** (मोर, peacock) is the guide. He walks along the bottom of the page as you read, turns round when you scroll back, and fans all 24 feathers if you click him. 24 echoes the spokes of the chakra, and it is also how the loader counts.
+**Mor** (मोर, peacock) is the guide. He walks along the bottom of the page as you read, turns round when you scroll back, and fans all 24 feathers if you click him.
 
-<img src=".github/readme/palette.png" alt="The palette: three saffrons, two paper ivories, three greens and three navies" width="100%" />
+<img src=".github/readme/palette.png" alt="The palette: three blues, two paper whites, three pinks and three navies" width="100%" />
 
 ## A tour
 
 <table>
   <tr>
-    <td width="50%"><img src=".github/readme/globe.jpg" alt="A particle globe with India in flag colours and Pune pinned" /></td>
+    <td width="50%"><img src=".github/readme/globe.jpg" alt="A particle globe with India tinted pink and blue and Pune pinned" /></td>
     <td width="50%"><img src=".github/readme/pune.jpg" alt="A particle map of Pune with pins for VIT Pune, MIT-WPU and I T Solutions" /></td>
   </tr>
   <tr>
@@ -55,23 +55,33 @@ As you scroll, the clouds close into night and a single particle system tells th
   </tr>
   <tr>
     <td><img src=".github/readme/build.jpg" alt="A backend pipeline made of particles with request packets moving between nodes" /></td>
-    <td><img src=".github/readme/shelf.jpg" alt="A curved shelf of tapes receding into depth, with CESAC open at the centre" /></td>
+    <td><img src=".github/readme/shelf.jpg" alt="A curved shelf of tapes receding into depth, with one cover facing out" /></td>
   </tr>
   <tr>
     <td><b>What I build.</b> Frontend, backend and AI tabs. Click a node to send a request, or a neuron to fire it.</td>
-    <td><b>The shelf.</b> Scroll, drag, use the arrow keys or click the month ruler.</td>
+    <td><b>The shelf.</b> An endless loop that turns on its own. Drag, swipe sideways, use the arrows or click the month ruler. Page scroll goes straight past it.</td>
   </tr>
   <tr>
-    <td><img src=".github/readme/detail.jpg" alt="The CESAC detail sheet with its screenshot bleeding in like ink" /></td>
+    <td><img src=".github/readme/detail.jpg" alt="A project detail sheet with its screenshot bleeding in like ink" /></td>
     <td><img src=".github/readme/wins.jpg" alt="Wins: Mor on the podium, a 250 team funnel and CESAC numbers" /></td>
   </tr>
   <tr>
     <td><b>Open a tape.</b> Paper grows out of the cover and the screenshot bleeds in like ink.</td>
-    <td><b>Wins so far.</b> Mor stands on the step we finished on.</td>
+    <td><b>Wins so far.</b> Two podiums with Patient-Tap. Mor stands on the step we finished on.</td>
   </tr>
 </table>
 
+<img src=".github/readme/footer.jpg" alt="The footer: a greeting in English, Marathi and Hindi, live counters, Pune time, live sites, links and the hatched peacock" width="100%" />
+
 <img src=".github/readme/phones.jpg" alt="The hero, the India map and the shelf on three phones" width="100%" />
+
+## Wins
+
+| | Where | With |
+| --- | --- | --- |
+| **First Runner-Up** | Incubex '26, MIT World Peace University, Pune | Patient-Tap |
+| **Second Runner-Up** | CODEAMBLE 2026, national 24-hour hackathon, Kharghar, Navi Mumbai. 3rd out of 250+ teams | Patient-Tap |
+| **CESAC** | 2,400+ students registered, 11,000+ records submitted, 2,00,000+ page views | [cesac.in](https://www.cesac.in) |
 
 ## On the shelf
 
@@ -79,8 +89,8 @@ Live custom domains come first.
 
 | | Project | What it is | With |
 | --- | --- | --- | --- |
-| 01 | [**CESAC**](https://www.cesac.in) | One record of every student achievement in the department. 1,554 students in just over a week | Frontend, backend and database |
-| 02 | [**Patient-Tap**](https://www.patient-tap.shop) | An encrypted medical ID on your wrist. Second Runner-Up, CODEAMBLE 2026 | Team Vishwakarma gng |
+| 01 | [**CESAC**](https://www.cesac.in) | One record of every student achievement in the department. 2,400+ students and 11,000+ records | Frontend, backend and database |
+| 02 | [**Patient-Tap**](https://www.patient-tap.shop) | An encrypted medical ID on your wrist. Podiums at Incubex '26 and CODEAMBLE 2026 | Team Vishwakarma gng |
 | 03 | [**I T Solutions**](https://itspune.in) | Website and repair tracker for a Pune service shop | Client build |
 | 04 | [**Sigil**](https://www.sigil-vk.online) | Verify degrees and resumes by signature, not by phone call | Team Sigil, VIT Pune |
 | 05 | [**Saṃvāda**](https://samvada-ten.vercel.app) | Learn a language by speaking it, in ten languages | Solo |
@@ -102,7 +112,7 @@ Live custom domains come first.
 
 ## How it is built
 
-Vite, React and TypeScript, with GSAP and Lenis for motion and **hand-written WebGL** for the sky and particles. No UI framework and no Three.js, so the whole site is about 220 KB gzipped.
+Vite, React and TypeScript, with GSAP and Lenis for motion and **hand-written WebGL** for the sky and particles. No UI framework and no Three.js, so the code ships at about 245 KB gzipped.
 
 | Piece | What it does | File |
 | --- | --- | --- |
@@ -110,13 +120,15 @@ Vite, React and TypeScript, with GSAP and Lenis for motion and **hand-written We
 | Sky life | Pixel birds that scatter from the pointer, kites that lean toward it | [`SkyLife.tsx`](src/gl/SkyLife.tsx) |
 | Particles | 34,000 pixels (16,000 on phones), one buffer per shape, a shock ring on click | [`Particles.tsx`](src/gl/Particles.tsx) |
 | Story | Globe, India, Pune, the build tabs and the sunrise, all on one sticky stage | [`Story.tsx`](src/components/Story.tsx) |
-| Shelf | Tapes on a curved arc that recedes into depth, driven by scroll | [`Shelf.tsx`](src/components/Shelf.tsx) |
+| Shelf | An endless loop of tapes on a curved arc that turns on its own; drag, swipe, arrows, keys or the month ruler | [`Shelf.tsx`](src/components/Shelf.tsx) |
 | Detail | Paper that grows out of a cover, with the screenshot bleeding in as ink | [`Detail.tsx`](src/components/Detail.tsx) |
+| Wins | Podium, a 250-team funnel, CESAC counters, research, a commit calendar | [`Wins.tsx`](src/components/Wins.tsx) |
+| Footer | A greeting in English, Marathi and Hindi, live counters, Pune time, live sites, and a peacock that fans out when clicked | [`Chrome.tsx`](src/components/Chrome.tsx) |
 | Loader | 24 feathers that open as the fonts arrive, greeting in Marathi, Hindi and English | [`Loader.tsx`](src/components/Loader.tsx) |
 | Cursor | A square on the pointer, a short dither trail, a reticle on anything clickable | [`Cursor.tsx`](src/components/Cursor.tsx) |
 | Mor | Walks, talks, and fans his tail | [`Mor.tsx`](src/components/Mor.tsx) |
 
-Motion respects `prefers-reduced-motion`: the loader, smooth scroll, custom cursor and idle animation all switch off. The full design system lives in [`DESIGN.md`](DESIGN.md).
+Motion respects `prefers-reduced-motion`: the loader, smooth scroll, custom cursor, the shelf's own turning and idle animation all switch off. The full design system lives in [`DESIGN.md`](DESIGN.md).
 
 <details>
 <summary><b>Where everything lives</b></summary>

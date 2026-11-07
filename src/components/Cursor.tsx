@@ -120,7 +120,7 @@ export function Cursor() {
   return (
     <div ref={root} className="cursor" aria-hidden="true">
       {Array.from({ length: TRAIL }, (_, i) => (
-        <i key={i} ref={(el) => { cells.current[i] = el }} className={`cursor-cell ${i % 2 ? 'is-green' : ''}`} />
+        <i key={i} ref={(el) => { cells.current[i] = el }} className={`cursor-cell ${i % 2 ? 'is-alt' : ''}`} />
       ))}
       <div ref={frame} className="cursor-frame"><b /><b /><b /><b /></div>
       <div ref={dot} className="cursor-dot"><i /></div>

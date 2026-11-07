@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { CONTACT, SOCIALS } from '../data/site'
+import { COMMITS } from '../data/commits'
+import { CONTACT, HACKATHONS, PROJECTS, SOCIALS } from '../data/site'
 import { Sky } from '../gl/Sky'
 import { finePointer, gsap, onReady, palette as p, reduced, ScrollTrigger } from '../lib/motion'
 import { drawFan, fanOnPaper } from '../lib/shapes'
-import { Arrow, jumpTo, Magnetic, PuneClock } from './Bits'
+import { Arrow, Count, jumpTo, Magnetic, pixelBurst, PuneClock, Scramble } from './Bits'
 import { morSay } from './Mor'
 
 const LINKS = [
@@ -53,21 +54,30 @@ export function Nav() {
   )
 }
 
-/** The big hatched peacock. Its lines drift, and lean toward the pointer. */
+/**
+ * The big hatched peacock. Its lines drift and lean toward the pointer, it opens one
+ * feather at a time when it scrolls in, and a click folds it and fans it out again.
+ */
 function HatchFan() {
   const ref = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const c = ref.current!
     const ctx = c.getContext('2d')!
     const mask = document.createElement('canvas')
+    const fan = { n: reduced ? 24 : 0 }
     let w = 0
     let h = 0
+    const paintMask = () => {
+      const m = mask.getContext('2d')!
+      m.clearRect(0, 0, w, h)
+      drawFan(m, w, h, fan.n, { ...fanOnPaper, hollow: true })
+    }
     const size = () => {
       w = c.width = Math.round(c.clientWidth)
       h = c.height = Math.round(c.clientHeight)
       mask.width = w
       mask.height = h
-      drawFan(mask.getContext('2d')!, w, h, 24, { ...fanOnPaper, hollow: true })
+      paintMask()
     }
     size()
     const ro = new ResizeObserver(size)
@@ -79,14 +89,25 @@ function HatchFan() {
     let visible = false
     const io = new IntersectionObserver(([en]) => (visible = en.isIntersecting))
     io.observe(c)
+    const grow = (from: number) =>
+      gsap.fromTo(fan, { n: from }, { n: 24, duration: 1.6, ease: 'power2.out', onUpdate: paintMask })
+    const st = reduced ? null : ScrollTrigger.create({ trigger: c, start: 'top 85%', once: true, onEnter: () => grow(0) })
+    const click = (e: MouseEvent) => {
+      if (reduced) return
+      pixelBurst(e.clientX, e.clientY, 36)
+      gsap.killTweensOf(fan)
+      gsap.to(fan, { n: 2, duration: 0.45, ease: 'power2.in', onUpdate: paintMask, onComplete: () => void grow(2) })
+      morSay('मोर!')
+    }
+    c.addEventListener('click', click)
     const draw = (t: number) => {
       lean += (target - lean) * 0.05
       ctx.globalCompositeOperation = 'source-over'
       ctx.clearRect(0, 0, w, h)
       const g = ctx.createLinearGradient(0, 0, w, 0)
-      g.addColorStop(0, p.s3)
+      g.addColorStop(0, p.pk3)
       g.addColorStop(0.5, p.ink)
-      g.addColorStop(1, p.g3)
+      g.addColorStop(1, p.bl3)
       ctx.strokeStyle = g
       ctx.lineWidth = 2
       const gap = 7
@@ -108,33 +129,105 @@ function HatchFan() {
     if (!reduced) gsap.ticker.add(tick)
     return () => {
       gsap.ticker.remove(tick)
+      gsap.killTweensOf(fan)
+      st?.kill()
       ro.disconnect()
       io.disconnect()
+      c.removeEventListener('click', click)
       window.removeEventListener('pointermove', move)
     }
   }, [])
-  return <canvas ref={ref} className="hatch" aria-hidden="true" />
+  return <canvas ref={ref} className="hatch" data-cursor-label="Fan it" aria-hidden="true" />
 }
+
+const GREETS = [
+  { t: 'Say hello', deva: false },
+  { t: 'नमस्कार', deva: true },
+  { t: 'नमस्ते', deva: true },
+]
+
+/** Pune time in words, with a pixel sun or moon. */
+function PuneNow() {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const t = window.setInterval(() => setNow(new Date()), 15000)
+    return () => window.clearInterval(t)
+  }, [])
+  const time = new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false }).format(now)
+  const h = Number(time.slice(0, 2))
+  const part = h < 5 ? 'late night' : h < 12 ? 'morning' : h < 17 ? 'afternoon' : h < 20 ? 'evening' : 'night'
+  const day = h >= 6 && h < 19
+  return (
+    <p className="footer-now">
+      <i className={`footer-sky ${day ? 'is-day' : 'is-night'}`} aria-hidden="true" />
+      {time} IST, {part}
+    </p>
+  )
+}
+
+const JUMPS = [
+  { id: 'top', label: 'Top' },
+  { id: 'about', label: 'About' },
+  { id: 'work', label: 'Work' },
+  { id: 'wins', label: 'Wins' },
+  { id: 'research', label: 'Research' },
+]
 
 export function Footer() {
   const [copied, setCopied] = useState(false)
-  const copy = async () => {
+  const [greet, setGreet] = useState(0)
+  const sign = useRef<HTMLButtonElement>(null)
+  const picked = useRef(false)
+
+  // The greeting turns through English, Marathi and Hindi while the footer is on screen
+  useEffect(() => {
+    if (reduced) return
+    let seen = false
+    const io = new IntersectionObserver(([en]) => (seen = en.isIntersecting))
+    io.observe(sign.current!)
+    const t = window.setInterval(() => {
+      if (seen && !picked.current) setGreet((g) => (g + 1) % GREETS.length)
+    }, 3200)
+    return () => {
+      window.clearInterval(t)
+      io.disconnect()
+    }
+  }, [])
+
+  const copy = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    const r = e.currentTarget.getBoundingClientRect()
     try {
       await navigator.clipboard.writeText(CONTACT.email)
       setCopied(true)
+      pixelBurst(r.left + r.width / 2, r.top + r.height / 2)
       morSay('Copied!')
       window.setTimeout(() => setCopied(false), 1800)
     } catch {
       window.location.href = `mailto:${CONTACT.email}`
     }
   }
+  const nextGreet = (e: React.MouseEvent) => {
+    picked.current = true
+    const n = (greet + 1) % GREETS.length
+    setGreet(n)
+    morSay(GREETS[n].t)
+    pixelBurst(e.clientX, e.clientY, 24)
+  }
+  const live = PROJECTS.filter((x) => !x.domain.endsWith('.vercel.app'))
+  const g = GREETS[greet]
+
   return (
     <footer className="footer" id="contact" data-mor="footer">
       <Sky mode="footer" cell={12} />
       <div className="footer-top wrap">
         <div className="footer-hello">
-          <p className="pixel">Exploring new opportunities</p>
-          <h2 className="display footer-sign">Say hello</h2>
+          <Scramble className="pixel" text="Exploring new opportunities" />
+          <h2 className="footer-sign-wrap">
+            <span className="sr-only">Say hello</span>
+            <button ref={sign} className="footer-sign" onClick={nextGreet} data-cursor-label="Another way" aria-hidden="true" tabIndex={-1}>
+              <span key={greet} className={`footer-greet ${g.deva ? 'deva' : 'display'}`}>{g.t}</span>
+            </button>
+          </h2>
           <div className="footer-actions">
             <Magnetic>
               <a className="btn btn-ink" href={`mailto:${CONTACT.email}`}>
@@ -145,24 +238,72 @@ export function Footer() {
           </div>
           <a className="footer-phone" href={CONTACT.phoneHref}>{CONTACT.phone}</a>
         </div>
-        <ul className="footer-links">
-          {SOCIALS.map((s) => (
-            <li key={s.label}>
-              <a href={s.href} target="_blank" rel="noreferrer">
-                <span>{s.label}</span>
-                <small className="pixel">{s.handle}</small>
-              </a>
-            </li>
-          ))}
-        </ul>
+        <dl className="footer-stats">
+          <div><dd className="display"><Count to={PROJECTS.length} /></dd><dt>builds on the shelf</dt></div>
+          <div><dd className="display"><Count to={HACKATHONS.length} /></dd><dt>hackathon podiums</dt></div>
+          <div><dd className="display"><Count to={COMMITS.total} /></dd><dt>commits in a year</dt></div>
+          <div><dd className="display"><Count to={39} /></dd><dt>Vercel projects</dt></div>
+        </dl>
       </div>
+
+      <div className="footer-grid wrap">
+        <div className="footer-col">
+          <p className="pixel footer-label">Based in</p>
+          <p className="footer-big">Pune, Maharashtra</p>
+          <PuneNow />
+        </div>
+        <div className="footer-col">
+          <p className="pixel footer-label">Studying</p>
+          <p className="footer-big">Computer Engineering</p>
+          <p className="footer-small">VIT Pune, 2025 to 2029</p>
+        </div>
+        <div className="footer-col">
+          <p className="pixel footer-label">Live now</p>
+          <ul className="footer-list">
+            {live.map((x) => (
+              <li key={x.id}>
+                <a href={x.url} target="_blank" rel="noreferrer">
+                  <span>{x.domain}</span> <Arrow />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="footer-col">
+          <p className="pixel footer-label">Elsewhere</p>
+          <ul className="footer-list">
+            {SOCIALS.map((x) => (
+              <li key={x.label}>
+                <a href={x.href} target="_blank" rel="noreferrer">
+                  <span>{x.label}</span> <small className="pixel">{x.handle}</small>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <nav className="footer-col" aria-label="On this page">
+          <p className="pixel footer-label">On this page</p>
+          <ul className="footer-list">
+            {JUMPS.map((x) => (
+              <li key={x.id}>
+                <a href={`#${x.id}`} onClick={(e) => { e.preventDefault(); jumpTo(x.id, x.label) }}>
+                  <span>{x.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+
       <HatchFan />
       <div className="footer-base wrap pixel">
         <span>Viral Dhoka, 2026</span>
+        <span className="footer-credit">Built in Pune with React, GSAP and WebGL</span>
         <span className="footer-credit">
           India map from <a href="https://github.com/VictorCazanave/svg-maps" target="_blank" rel="noreferrer">svg-maps</a>, CC BY 4.0
         </span>
         <span className="deva">पुणे, महाराष्ट्र</span>
+        <button className="footer-top-btn" onClick={() => jumpTo('top', 'Viral Dhoka')}>Back to top</button>
       </div>
     </footer>
   )

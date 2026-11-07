@@ -84,6 +84,100 @@ export function Rise({ text, as: Tag = 'span', className, delay = 0, onScroll = 
   )
 }
 
+/** A number that counts up when it scrolls into view. */
+export function Count({ to, suffix = '' }: { to: number; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  useLayoutEffect(() => {
+    const el = ref.current!
+    const fmt = (n: number) => Math.round(n).toLocaleString('en-IN') + suffix
+    el.textContent = fmt(reduced ? to : 0)
+    if (reduced) return
+    const s = { v: 0 }
+    const st = ScrollTrigger.create({
+      trigger: el,
+      start: 'top 96%',
+      once: true,
+      onEnter: () => gsap.to(s, { v: to, duration: 1.8, ease: 'power3.out', onUpdate: () => (el.textContent = fmt(s.v)) }),
+    })
+    return () => st.kill()
+  }, [to, suffix])
+  return <span ref={ref} />
+}
+
+/** A small burst of pixels from a point on screen, for moments worth celebrating. */
+export function pixelBurst(x: number, y: number, count = 44) {
+  if (reduced) return
+  const c = document.createElement('canvas')
+  c.className = 'burst'
+  c.width = window.innerWidth
+  c.height = window.innerHeight
+  document.body.appendChild(c)
+  const ctx = c.getContext('2d')!
+  const colors = [p.pk3, p.bl3, p.pk2, p.bl2, p.ink]
+  const bits = Array.from({ length: count }, (_, i) => {
+    const a = Math.random() * Math.PI * 2
+    const v = 3 + Math.random() * 7
+    return { x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 4, s: 4 + ((Math.random() * 3) | 0) * 2, c: colors[i % colors.length] }
+  })
+  const start = performance.now()
+  const frame = (now: number) => {
+    const k = (now - start) / 950
+    ctx.clearRect(0, 0, c.width, c.height)
+    ctx.globalAlpha = Math.max(0, 1 - k * k)
+    for (const b of bits) {
+      b.x += b.vx
+      b.y += b.vy
+      b.vy += 0.42
+      b.vx *= 0.97
+      ctx.fillStyle = b.c
+      ctx.fillRect(Math.round(b.x / 4) * 4, Math.round(b.y / 4) * 4, b.s, b.s)
+    }
+    if (k < 1) requestAnimationFrame(frame)
+    else c.remove()
+  }
+  requestAnimationFrame(frame)
+}
+
+const GLYPHS = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789/+<>#'
+
+/** Pixel labels decode themselves when they scroll in, and again when you hover them. */
+export function Scramble({ text, className, as: Tag = 'p' }: { text: string; className?: string; as?: 'p' | 'span' }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    const el = ref.current!
+    el.textContent = text
+    if (reduced) return
+    let raf = 0
+    const run = () => {
+      cancelAnimationFrame(raf)
+      const start = performance.now()
+      const len = text.length
+      const frame = (now: number) => {
+        const k = Math.min(1, (now - start) / 620)
+        const fixed = Math.floor(k * len)
+        let out = text.slice(0, fixed)
+        for (let i = fixed; i < len; i++) out += text[i] === ' ' ? ' ' : GLYPHS[(Math.random() * GLYPHS.length) | 0]
+        el.textContent = out
+        if (k < 1) raf = requestAnimationFrame(frame)
+      }
+      raf = requestAnimationFrame(frame)
+    }
+    const st = ScrollTrigger.create({ trigger: el, start: 'top 90%', once: true, onEnter: run })
+    el.addEventListener('pointerenter', run)
+    return () => {
+      cancelAnimationFrame(raf)
+      st.kill()
+      el.removeEventListener('pointerenter', run)
+    }
+  }, [text])
+  return (
+    <Tag className={className}>
+      <span ref={ref as never} aria-hidden="true" />
+      <span className="sr-only">{text}</span>
+    </Tag>
+  )
+}
+
 /** Words fade up from faint to full as the paragraph scrolls past. */
 export function ScrubText({ text, className }: { text: string; className?: string }) {
   const ref = useRef<HTMLParagraphElement>(null)
@@ -184,7 +278,7 @@ export function PuneClock() {
   const day = h >= 6 && h < 19
   return (
     <span className="clock pixel">
-      <i className="clock-dot" style={{ background: day ? p.s3 : p.g2 }} />
+      <i className="clock-dot" style={{ background: day ? p.pk3 : p.bl2 }} />
       Pune {time} IST
     </span>
   )

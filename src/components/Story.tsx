@@ -33,7 +33,7 @@ const TABS: { id: Tab; label: string; title: string; body: string; hint: string 
     id: 'back',
     label: 'Backend',
     title: 'Systems that hold up',
-    body: 'APIs, auth, queues and Postgres. CESAC took 1,554 students and 5,683 records in just over a week.',
+    body: 'APIs, auth, queues and Postgres. CESAC now holds 11,000+ records from 2,400+ students.',
     hint: 'Click a node to send a request',
   },
   {
@@ -105,7 +105,7 @@ function GraphPulse({ graph, labels }: { graph: Graph; labels: boolean }) {
         const b = graph.nodes[k.edge[1]]
         const x = (a.x + (b.x - a.x) * k.t) * s
         const y = (a.y + (b.y - a.y) * k.t) * s
-        ctx.fillStyle = p.s3
+        ctx.fillStyle = p.pk3
         const size = (labels ? 11 : 7) * dpr
         ctx.fillRect(Math.round(x - size / 2), Math.round(y - size / 2), size, size)
         if (k.t >= 1) {
@@ -116,7 +116,7 @@ function GraphPulse({ graph, labels }: { graph: Graph; labels: boolean }) {
       graph.nodes.forEach((n, i) => {
         flash[i] *= 0.92
         if (flash[i] > 0.06) {
-          ctx.fillStyle = `rgba(249, 199, 148, ${flash[i] * 0.8})`
+          ctx.fillStyle = `rgba(246, 191, 213, ${flash[i] * 0.8})`
           const size = (labels ? 86 : 50) * s
           ctx.fillRect(n.x * s - size / 2, n.y * s - size / 2, size, size)
         }

@@ -8,7 +8,7 @@ precision highp float;
 uniform vec2 uRes;
 uniform vec2 uMouse, uLook;
 uniform float uTime, uClose, uCell, uMode;
-uniform vec3 uPaper, uS1, uS2, uS3, uG1, uG2, uG3, uNight;
+uniform vec3 uPaper, uT1, uT2, uT3, uB1, uB2, uB3, uNight;
 
 float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 float vnoise(vec2 p){
@@ -26,9 +26,9 @@ float bayer4(vec2 a){ return bayer2(0.5 * a) * 0.25 + bayer2(a); }
 
 vec3 ramp(float k, bool top){
   if (k < 0.5) return uPaper;
-  if (k < 1.5) return top ? uS1 : uG1;
-  if (k < 2.5) return top ? uS2 : uG2;
-  if (k < 3.5) return top ? uS3 : uG3;
+  if (k < 1.5) return top ? uT1 : uB1;
+  if (k < 2.5) return top ? uT2 : uB2;
+  if (k < 3.5) return top ? uT3 : uB3;
   return uNight;
 }
 
@@ -52,7 +52,7 @@ void main(){
   float d;
   bool top;
   if (uMode < 0.5) {
-    // Hero: saffron above, clear ivory across the middle, green below. Flag order.
+    // Hero: blue above, clear white across the middle, a pink glow below. Dawn.
     float edge = abs(y - 0.5) * 2.0;
     d = (n - 0.5) * 3.1 + pow(edge, 1.7) * 1.35 + x * x * 0.55 - 0.3 + uClose * uClose * 2.75;
     top = y + (n - 0.5) * 0.5 > 0.5;
@@ -66,7 +66,7 @@ void main(){
     float cx = (cc.x / uRes.x - 0.5) / 0.42;
     d -= exp(-(cx * cx + cy * cy)) * 1.15 * (1.0 - uClose);
   } else {
-    // Footer: one bank of cloud at the horizon, saffron and green drifting through it
+    // Footer: one bank of cloud at the horizon, pink and blue drifting through it
     d = (n - 0.5) * 2.0 + pow(1.0 - y, 2.4) * 1.6 - 0.62;
     top = fbm(uv * 1.3 + vec2(uTime * 0.01, 7.0)) > 0.5;
   }
@@ -104,7 +104,7 @@ export function Sky({ mode = 'hero', closeRef, cell = 14 }: Props) {
     const canvas = ref.current!
     const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' })
     if (!gl) {
-      canvas.style.background = `linear-gradient(${p.s1}, ${p.paper} 40%, ${p.paper} 60%, ${p.g1})`
+      canvas.style.background = `linear-gradient(${p.bl1}, ${p.paper} 40%, ${p.paper} 60%, ${p.pk1})`
       return
     }
     const compile = (type: number, src: string) => {
@@ -133,12 +133,12 @@ export function Sky({ mode = 'hero', closeRef, cell = 14 }: Props) {
     const uLook = u('uLook')
     const colors: [string, string][] = [
       ['uPaper', p.paper],
-      ['uS1', p.s1],
-      ['uS2', p.s2],
-      ['uS3', p.s3],
-      ['uG1', p.g1],
-      ['uG2', p.g2],
-      ['uG3', p.g3],
+      ['uT1', p.bl1],
+      ['uT2', p.bl2],
+      ['uT3', p.bl3],
+      ['uB1', p.pk1],
+      ['uB2', p.pk2],
+      ['uB3', p.pk3],
       ['uNight', p.night],
     ]
     colors.forEach(([n, c]) => gl.uniform3fv(u(n), hexToRgb(c)))

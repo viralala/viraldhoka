@@ -42,7 +42,7 @@ export const PROJECTS: Project[] = [
     stack: ['Next.js 16', 'React 19', 'TypeScript', 'Tailwind 4'],
     summary:
       'The platform for the Computer Engineering Student Activities Committee at VIT Pune. Students submit certifications, events, competitions, internships, patents and publications in one place, faculty verify them, and every achievement gets recorded.',
-    points: ['1,554 students registered in just over a week', '5,683 records submitted', '62,000+ page views, 1,131 visitors on the peak day'],
+    points: ['2,400+ students registered', '11,000+ records submitted', '2,00,000+ page views'],
     scheme: 0,
   },
   {
@@ -58,7 +58,7 @@ export const PROJECTS: Project[] = [
     stack: ['Flutter', 'Dart', 'TypeScript', 'Supabase', 'Razorpay'],
     summary:
       'An offline-first NFC emergency identity. Allergies, medications and critical history live encrypted on a wearable card, and any first responder can read them in seconds with no signal at all.',
-    points: ['Second Runner-Up at CODEAMBLE 2026', 'AES-256-GCM on an NFC tag with 504 bytes to work with', 'Reads and writes with zero network dependency'],
+    points: ["First Runner-Up at Incubex '26, MIT-WPU", 'Second Runner-Up at CODEAMBLE 2026, Kharghar, Navi Mumbai', 'AES-256-GCM on an NFC tag with 504 bytes to work with', 'Reads and writes with zero network dependency'],
     scheme: 2,
   },
   {
@@ -298,7 +298,7 @@ export const ARCHIVE = [
 
 export const PINS = [
   { id: 'vit', name: 'VIT Pune', place: 'Bibwewadi', lat: 18.4636, lon: 73.8682, note: 'Where I study Computer Engineering, 2025 to 2029.' },
-  { id: 'mit', name: 'MIT-WPU', place: 'Kothrud', lat: 18.5181, lon: 73.8153, note: "Where our team took First Runner-Up at Incubex '26." },
+  { id: 'mit', name: 'MIT-WPU', place: 'Kothrud', lat: 18.5181, lon: 73.8153, note: "Where Patient-Tap took First Runner-Up at Incubex '26." },
   { id: 'its', name: 'I T Solutions', place: 'Somwar Peth', lat: 18.5205, lon: 73.865, note: 'A local repair shop I built a site and tracker for.' },
 ]
 
@@ -308,15 +308,15 @@ export const HACKATHONS = [
     name: "Incubex '26",
     place: 'First Runner-Up',
     rank: 2,
-    host: 'MIT World Peace University',
-    note: 'Second place with Tanaya Thorat, Samruddhi Wankhede, Vedant Patil, Samarth Dhage and Vyanktesh Yeole.',
+    host: 'MIT World Peace University, Pune',
+    note: 'Second place with Patient-Tap, alongside Tanaya Thorat, Samruddhi Wankhede, Vedant Patil, Samarth Dhage and Vyanktesh Yeole.',
   },
   {
     id: 'codeamble',
     name: 'CODEAMBLE 2026',
     place: 'Second Runner-Up',
     rank: 3,
-    host: 'National 24-hour hackathon',
+    host: 'National 24-hour hackathon, Kharghar, Navi Mumbai',
     note: 'My first offline hackathon and first podium, with Patient-Tap. Built with Samarth Dhage, Tanaya Thorat and Vyanktesh Yeole.',
   },
 ]
