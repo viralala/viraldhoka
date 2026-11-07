@@ -38,10 +38,8 @@ The commit calendar in `src/data/commits.ts` and the land mask in `src/data/land
 
 ## Deploy
 
-```bash
-vercel deploy --prod
-```
+The repository is connected to the `viraldhoka` project on Vercel. Every push to `main` deploys to https://viraldhoka.vercel.app, and pushes to other branches get preview links.
 
-Set `VITE_SITE_URL` in `.env` to the live address so the canonical and social tags point at it.
+`VITE_SITE_URL` in `.env` is the live address, used by the canonical and social tags. Change it if the site moves to a custom domain.
 
 See `DESIGN.md` for the design system.
