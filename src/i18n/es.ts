@@ -73,6 +73,8 @@ const es: Dict = {
         more: (n) => `${n} más en la estantería`,
         open: (title) => `Abrir ${title}`,
         readme: 'readme.txt',
+        toolbox: 'Con qué construyo',
+        groups: ['Lenguajes', 'Frameworks', 'Movimiento y 3D', 'Bases de datos', 'IA / ML', 'Nube y DevOps', 'Pruebas'],
       },
     },
     next: {

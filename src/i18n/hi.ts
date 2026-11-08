@@ -73,6 +73,8 @@ const hi: Dict = {
         more: (n) => `शेल्फ़ पर ${n} और`,
         open: (title) => `${title} खोलें`,
         readme: 'readme.txt',
+        toolbox: "मैं किससे बनाता हूँ",
+        groups: ["भाषाएँ", "फ्रेमवर्क", "मोशन और 3D", "डेटाबेस", "AI / ML", "क्लाउड और DevOps", "टेस्टिंग"],
       },
     },
     next: {

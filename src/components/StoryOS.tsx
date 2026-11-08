@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react'
-import { PINS, PROJECTS } from '../data/site'
+import { PINS } from '../data/site'
 import { finePointer, reduced } from '../lib/motion'
-import { localProject, useT } from '../i18n'
-import { Arrow, jumpTo } from './Bits'
-import { detailApi } from './Detail'
+import { useT } from '../i18n'
+import { TOOLBOX } from '../data/tools'
 
 /**
  * Mor OS: the night half of the story as a small pastel desktop. Each beat is an app
@@ -295,42 +294,28 @@ export function Terminal({ tab, onTab }: { tab: Tab; onTab: (t: Tab) => void }) 
   )
 }
 
-const LIVE = PROJECTS.filter((p) => !p.domain.endsWith('.vercel.app'))
-
-/** "What I build" as an app grid: live sites first, each opening its detail sheet. */
+/** The Apps window: the tech stack, grouped, with each tool in its brand colour. */
 export function Apps() {
   const t = useT()
   const s = t.story
   const a = s.os.appsWin
   return (
     <div className="os-apps">
-      <ul className="os-grid">
-        {LIVE.map((p) => {
-          const lp = localProject(p, t)
-          return (
-            <li key={p.id}>
-              <button
-                className="os-app"
-                aria-label={a.open(lp.title)}
-                onClick={(e) => {
-                  const btn = e.currentTarget
-                  detailApi.open(p, () => btn.querySelector('img')!.getBoundingClientRect())
-                }}
-              >
-                <img src={`/work/${p.id}-cover.png`} alt="" draggable={false} loading="lazy" />
-                <span className="os-app-name">{lp.title}</span>
-                <span className="pixel os-app-live" title={p.domain}><i />{a.live}</span>
-              </button>
-            </li>
-          )
-        })}
-      </ul>
-      <button className="btn btn-ink os-more" onClick={() => jumpTo('work', t.nav.work)}>
-        {a.more(PROJECTS.length - LIVE.length)} <Arrow />
-      </button>
-      <div className="os-readme">
-        <p className="pixel">{a.readme}</p>
-        <p><b>{s.next.title}.</b> {s.next.body}</p>
+      <div className="os-tools">
+        <p className="pixel">{a.toolbox}</p>
+        {TOOLBOX.map((g, i) => (
+          <div className="os-tool-row" key={i}>
+            <span className="pixel os-tool-group">{a.groups[i]}</span>
+            <ul className="os-tool-list">
+              {g.map((x) => (
+                <li key={x.name} style={{ '--tc': x.hex } as React.CSSProperties}>
+                  {x.path && <svg viewBox="0 0 24 24" aria-hidden="true"><path d={x.path} /></svg>}
+                  {x.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </div>
   )

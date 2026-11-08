@@ -71,6 +71,8 @@ const en = {
         more: (n: number) => `${n} more on the shelf`,
         open: (title: string) => `Open ${title}`,
         readme: 'readme.txt',
+        toolbox: 'What I build with',
+        groups: ['Languages', 'Frameworks', 'Motion & 3D', 'Databases', 'AI / ML', 'Cloud & DevOps', 'Testing'],
       },
     },
     next: {

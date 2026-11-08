@@ -73,6 +73,8 @@ const fr: Dict = {
         more: (n) => `${n} de plus sur l’étagère`,
         open: (title) => `Ouvrir ${title}`,
         readme: 'readme.txt',
+        toolbox: 'Avec quoi je construis',
+        groups: ['Langages', 'Frameworks', 'Motion & 3D', 'Bases de données', 'IA / ML', 'Cloud & DevOps', 'Tests'],
       },
     },
     next: {

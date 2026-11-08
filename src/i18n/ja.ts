@@ -73,6 +73,8 @@ const ja: Dict = {
         more: (n) => `棚にあと ${n} 件`,
         open: (title) => `${title} を開く`,
         readme: 'readme.txt',
+        toolbox: "使っている技術",
+        groups: ["言語", "フレームワーク", "モーションと3D", "データベース", "AI / ML", "クラウドとDevOps", "テスト"],
       },
     },
     next: {

@@ -73,6 +73,8 @@ const zh: Dict = {
         more: (n) => `书架上还有 ${n} 个`,
         open: (title) => `打开 ${title}`,
         readme: 'readme.txt',
+        toolbox: "我用什么来构建",
+        groups: ["语言", "框架", "动效与 3D", "数据库", "AI / ML", "云与 DevOps", "测试"],
       },
     },
     next: {

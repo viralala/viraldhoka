@@ -221,30 +221,74 @@ export function ScrubText({ text, className }: { text: string; className?: strin
   )
 }
 
+/** The ribbon's wave: wavelength in px and how fast it travels */
+const WAVE_K = 260
+const WAVE_T = 900
+
 export function Marquee({ items }: { items: string[] }) {
   const track = useRef<HTMLDivElement>(null)
+  const ribbon = useRef<SVGPathElement>(null)
   useEffect(() => {
     if (reduced) return
     const el = track.current!
+    const box = el.parentElement!
     let x = 0
     let dir = -1
     let skew = 0
+    const items_ = Array.from(el.children) as HTMLElement[]
+    // Sizes are read once (and on resize) so the wave never forces a layout per frame
+    let mids: number[] = []
+    let amp = 0
+    let W = 0
+    let cy = 0
+    let half = 0
+    const measure = () => {
+      mids = items_.map((it) => it.offsetLeft + it.offsetWidth / 2)
+      W = box.clientWidth
+      cy = el.offsetTop + el.offsetHeight / 2
+      // The ribbon hugs the text with a little margin
+      half = items_[0].offsetHeight * 0.36
+      amp = half * 0.55
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
     const tick = () => {
       const v = scrollVelocity()
       if (Math.abs(v) > 0.5) dir = v > 0 ? -1 : 1
       x += dir * (1.1 + Math.min(Math.abs(v) * 0.28, 16))
-      const half = el.scrollWidth / 2
-      if (x <= -half) x += half
-      if (x > 0) x -= half
+      const wrap = el.scrollWidth / 2
+      if (x <= -wrap) x += wrap
+      if (x > 0) x -= wrap
       skew += (Math.max(-8, Math.min(8, v * 0.28)) - skew) * 0.1
       el.style.transform = `translate3d(${x}px,0,0) skewX(${-skew}deg)`
+      const ph = performance.now() / WAVE_T
+      // Each word sits on the wave and leans with its slope
+      items_.forEach((it, i) => {
+        const a = (mids[i] + x) / WAVE_K + ph
+        const tilt = Math.atan((amp / WAVE_K) * Math.cos(a)) * (180 / Math.PI)
+        it.style.transform = `translateY(${Math.sin(a) * amp}px) rotate(${tilt}deg)`
+      })
+      // One continuous ribbon behind them, so there are no seams between words
+      let top = ''
+      let bot = ''
+      for (let sx = -20; sx <= W + 20; sx += 12) {
+        const y = cy + Math.sin(sx / WAVE_K + ph) * amp
+        top += `${top ? 'L' : 'M'}${sx},${(y - half).toFixed(1)}`
+        bot = `L${sx},${(y + half).toFixed(1)}` + bot
+      }
+      ribbon.current?.setAttribute('d', `${top}${bot}Z`)
     }
     gsap.ticker.add(tick)
-    return () => gsap.ticker.remove(tick)
+    return () => {
+      gsap.ticker.remove(tick)
+      ro.disconnect()
+    }
   }, [])
   const row = [...items, ...items, ...items]
   return (
     <div className="marquee" aria-label={items.join(', ')}>
+      <svg className="marquee-ribbon" aria-hidden="true"><path ref={ribbon} /></svg>
       <div className="marquee-track" ref={track} aria-hidden="true">
         {[...row, ...row].map((t, i) => (
           <span className="marquee-item" key={i}>

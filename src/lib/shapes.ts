@@ -1,6 +1,7 @@
 import india from '@svg-maps/india'
 import { LAND, LAND_H, LAND_W } from '../data/land'
 import { palette as p } from './motion'
+import { DUST_ICONS } from '../data/tools'
 
 export type FanColors = {
   barb: string
@@ -344,29 +345,24 @@ function codeTarget() {
   return c
 }
 
-function sunriseTarget() {
+/** The tech stack as a 4 by 4 grid of brand icons, each in its own colour */
+function toolsTarget() {
   const { c, ctx } = blank()
-  const cx = 256
-  const cy = 330
-  ctx.fillStyle = p.pk3
-  ctx.beginPath()
-  ctx.arc(cx, cy, 120, Math.PI, 0)
-  ctx.fill()
-  ctx.strokeStyle = p.pk2
-  ctx.lineWidth = 12
-  for (let i = 0; i < 13; i++) {
-    const a = Math.PI + (Math.PI * i) / 12
-    ctx.beginPath()
-    ctx.moveTo(cx + Math.cos(a) * 150, cy + Math.sin(a) * 150)
-    ctx.lineTo(cx + Math.cos(a) * (i % 2 ? 195 : 235), cy + Math.sin(a) * (i % 2 ? 195 : 235))
-    ctx.stroke()
-  }
-  ctx.fillStyle = p.onNight
-  ctx.fillRect(30, cy + 14, 452, 12)
-  ctx.fillStyle = p.bl2
-  ctx.fillRect(80, cy + 46, 352, 12)
-  ctx.fillStyle = p.bl3
-  ctx.fillRect(140, cy + 78, 232, 12)
+  const cell = 118
+  const size = 84
+  const x0 = (512 - cell * 4) / 2 + (cell - size) / 2
+  DUST_ICONS.forEach((tool, i) => {
+    if (!tool.path) return
+    ctx.save()
+    ctx.translate(x0 + (i % 4) * cell, x0 + Math.floor(i / 4) * cell)
+    ctx.scale(size / 24, size / 24)
+    // Near-black logos would vanish on the night sky, so they glow pale instead
+    const n = parseInt(tool.hex.slice(1), 16)
+    const lum = ((n >> 16) & 255) * 0.3 + ((n >> 8) & 255) * 0.59 + (n & 255) * 0.11
+    ctx.fillStyle = lum < 60 ? p.onNight : tool.hex
+    ctx.fill(new Path2D(tool.path))
+    ctx.restore()
+  })
   return c
 }
 
@@ -450,6 +446,6 @@ export function buildTargets(n: number): Float32Array[] {
     sample(codeTarget(), n),
     sample(graphTarget(PIPE, true), n),
     sample(graphTarget(NET, false), n),
-    sample(sunriseTarget(), n),
+    sample(toolsTarget(), n),
   ]
 }

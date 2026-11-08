@@ -494,7 +494,6 @@ export function Story() {
 
         <div ref={(el) => { panels.current[4] = el }} className="panel">
           <Win app="apps" go={goStep}>
-            <p className="pixel panel-kicker">{st_.apps.kicker}</p>
             <Apps />
           </Win>
         </div>
